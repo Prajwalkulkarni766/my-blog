@@ -1,0 +1,31 @@
+hr {
+  margin: 10px 0px;
+}
+
+.my-container {
+  width: 750px;
+}
+
+.my-btn {
+  background-color: black;
+  color: white;
+}
+
+.my-btn:hover {
+  border-color: black;
+  color: black;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.dot {
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  background-color: rgb(90, 97, 104);
+  border-radius: 50%;
+  margin: 0 8px;
+  vertical-align: middle;
+}
