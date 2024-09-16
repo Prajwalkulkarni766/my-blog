@@ -29,3 +29,79 @@ hr {
   margin: 0 8px;
   vertical-align: middle;
 }
+
+.write-blog-textarea {
+  border: none;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  resize: none;
+  text-align: justify;
+  padding: 0;
+  margin: 0;
+}
+
+.vertical-line {
+  width: 2px;
+  height: 100%;
+  background-color: #6c757d;
+}
+
+.text-justify {
+  text-align: justify;
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+}
+
+.overlay {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: -1;
+}
+
+.card:hover .overlay {
+  display: flex;
+  z-index: 1;
+}
+
+.remove-btn {
+  color: #dc3545;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 10px 20px;
+  font-size: large;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* For Firefox */
+/* .custom-scrollbar {
+  scrollbar-width: Thin scrollbar
+  scrollbar-color: #888 #f1f1f1;  
+} */
