@@ -1,11 +1,12 @@
 import React from "react";
 import Navbar from "../components/Navbar";
+import { NavLink } from "react-router-dom";
 
 export default function Login() {
   return (
     <>
       <Navbar />
-      <div className="container mt-3 my-container">
+      <div className="container mt-5 my-container">
         <h1 className="mb-4">Login</h1>
         <form>
           <div className="mb-3">
@@ -42,6 +43,11 @@ export default function Login() {
             Login
           </button>
         </form>
+        <div className="mt-3">
+          <NavLink to={"/signup"} className="text-body text-decoration-none">
+            Don't have an account?
+          </NavLink>
+        </div>
       </div>
     </>
   );

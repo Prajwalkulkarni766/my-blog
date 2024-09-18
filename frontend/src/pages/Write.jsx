@@ -1,6 +1,7 @@
 import React from "react";
 import CustomTextArea from "../components/CustomTextArea";
 import Navbar from "../components/Navbar";
+// import plus from "../assets/plus.svg";
 
 export default function Write() {
   return (

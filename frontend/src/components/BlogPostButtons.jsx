@@ -5,7 +5,7 @@ import readLater from "../assets/readLater.svg";
 import share from "../assets/share.svg";
 import listen from "../assets/listen.svg";
 
-export default function BlogPostButtons() {
+export default function BlogPostButtons({ listenOnclick }) {
   useEffect(() => {
     const tooltipTriggerList = document.querySelectorAll(
       '[data-bs-toggle="tooltip"]',
@@ -19,45 +19,49 @@ export default function BlogPostButtons() {
     <div className="d-flex">
       <div className="me-auto">
         {/* like button */}
-        <button
-          className="btn"
-          data-bs-toggle="tooltip"
-          data-bs-placement="top"
-          title="Like"
-        >
-          <img src={like} alt="like logo" title="Like" />
+        <button className="btn">
+          <img
+            src={like}
+            alt="like logo"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="Like"
+          />
         </button>
 
         {/* comment button */}
-        <button
-          className="btn"
-          data-bs-toggle="tooltip"
-          data-bs-placement="top"
-          title="Comment"
-        >
-          <img src={comment} alt="comment logo" />
+        <button className="btn">
+          <img
+            src={comment}
+            alt="comment logo"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="Comment"
+          />
         </button>
       </div>
 
       <div className="ms-auto">
         {/* save to read later button */}
-        <button
-          className="btn"
-          data-bs-toggle="tooltip"
-          data-bs-placement="top"
-          title="Read Later"
-        >
-          <img src={readLater} alt="Read later logo" />
+        <button className="btn">
+          <img
+            src={readLater}
+            alt="Read later logo"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="Read Later"
+          />
         </button>
 
         {/* share button */}
-        <button
-          className="btn"
-          data-bs-toggle="tooltip"
-          data-bs-placement="top"
-          title="Share"
-        >
-          <img src={share} alt="Share logo" />
+        <button className="btn">
+          <img
+            src={share}
+            alt="Share logo"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="Share"
+          />
         </button>
 
         {/* listen button */}
@@ -66,6 +70,7 @@ export default function BlogPostButtons() {
           data-bs-toggle="tooltip"
           data-bs-placement="top"
           title="Listen"
+          onClick={listenOnclick}
         >
           <img src={listen} alt="Listen logo" />
         </button>

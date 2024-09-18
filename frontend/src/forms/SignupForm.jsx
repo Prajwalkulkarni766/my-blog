@@ -5,7 +5,7 @@ import axiosInstance from "../axios/axiosInstance";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function SignupForm() {
+export default function SignupForm({ buttonTxt }) {
   const navigate = useNavigate();
 
   const signupSchema = Yup.object({
@@ -111,8 +111,7 @@ export default function SignupForm() {
                 </Grid>
             </Box> */}
 
-      <div className="container mt-3 my-container">
-        <h1 className="mb-4">Sign Up</h1>
+      <div>
         <form>
           <div className="mb-3">
             <label htmlFor="user_name" className="form-label">
@@ -159,7 +158,7 @@ export default function SignupForm() {
             />
           </div>
           <button type="submit" className="btn my-btn">
-            Signup
+            {buttonTxt}
           </button>
         </form>
       </div>

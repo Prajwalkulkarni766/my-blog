@@ -1,36 +1,21 @@
 import React from "react";
 import SignupForm from "../forms/SignupForm";
 import Navbar from "../components/Navbar";
+import { NavLink } from "react-router-dom";
 
 export default function Signup() {
   return (
     <>
       <Navbar />
-      <SignupForm />
-      {/* <div className="container mt-3 my-container">
-                <h1 className="mb-4">Sign Up</h1>
-                <form>
-                    <div className="mb-3">
-                        <label htmlFor="user_name" className="form-label">User Name</label>
-                        <input type="email" className="form-control" id="user_name" aria-describedby="emailHelp" />
-                        <div id="emailHelp" className="form-text">User name must be unique.</div>
-                    </div>
-                    <div className="mb-3">
-                        <label htmlFor="email_address" className="form-label">Email address</label>
-                        <input type="email" className="form-control" id="email_address" aria-describedby="emailHelp" />
-                        <div id="emailHelp" className="form-text">We'll never share your email with anyone else.</div>
-                    </div>
-                    <div className="mb-3">
-                        <label htmlFor="password" className="form-label">Password</label>
-                        <input type="password" className="form-control" id="password" />
-                    </div>
-                    <div className="mb-3">
-                        <label htmlFor="confirm_password" className="form-label">Confirm Password</label>
-                        <input type="password" className="form-control" id="confirm_password" />
-                    </div>
-                    <button type="submit" className="btn my-btn">Signup</button>
-                </form>
-            </div> */}
+      <div className="container mt-5 my-container">
+        <h1 className="mb-4">Sign Up</h1>
+        <SignupForm buttonTxt={"Signup"} />
+        <div className="mt-3">
+          <NavLink to={"/login"} className="text-body text-decoration-none">
+            Have an account?
+          </NavLink>
+        </div>
+      </div>
     </>
   );
 }

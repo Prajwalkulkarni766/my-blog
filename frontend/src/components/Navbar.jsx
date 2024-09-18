@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function Navbar() {
   const navMenus = [
@@ -7,8 +8,15 @@ export default function Navbar() {
     { path: "/write", label: "Write" },
     { path: "/notifications", label: "Notifications" },
     { path: "/profile", label: "Profile" },
-    { path: "/", label: "About" },
   ];
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    navigate(`/blog?searchTerm=${searchTerm}`);
+  };
 
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary">
@@ -29,14 +37,24 @@ export default function Navbar() {
         </button>
 
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
-          <form className="d-flex me-auto mt-1" role="search">
+          <form
+            className="d-flex me-auto mt-1"
+            role="search"
+            onSubmit={handleSubmit}
+          >
             <input
               className="form-control me-2"
               type="search"
               placeholder="Search"
               aria-label="Search"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button className="btn my-btn" type="submit">
+            <button
+              className="btn
+ my-btn"
+              type="submit"
+            >
               Search
             </button>
           </form>
