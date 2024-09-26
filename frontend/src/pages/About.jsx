@@ -69,7 +69,7 @@ export default function About() {
               </button>
             </div>
 
-            <h1 className="text-center display-4">Welcome to My Blog</h1>
+            <h1 className="text-center display-4 mt-4">Welcome to BlogSphere</h1>
             <p className="text-center">
               Discover insightful articles and thought-provoking discussions on
               a variety of topics.
