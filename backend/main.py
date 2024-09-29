@@ -1,9 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, APIRouter
-
-# from .schemas import user
-# from .configs.db import SessionLocal, engine
-# from . import crud
-# from sqlalchemy.orm import Session
+from fastapi import FastAPI
 
 from .routes.user import user_router
 from .routes.history import history_router
@@ -24,11 +19,21 @@ def root_location():
     return {"msg": "Hello from server"}
 
 
-# hash the password
-# when login assign jwt token or store user id in session
-# work on history clear route
+# add tags column in blog
+# get route for blog - by using recommendation model
 # work on generate notifications, get notficiation
-# pending follwers
+# work pending on follwers
+# change db name in .env file at last
+
+"""
+when user fetch the blog then add this code in get route
+db_history = models.History(
+        blog_id=blog.id,
+        user_id=blog.user_id,
+        blog_title=blog.title,
+        blog_subtitle=blog.sub_title,
+    )
+"""
 
 app.include_router(user_router, prefix=version_1_prefix)
 app.include_router(blog_router, prefix=version_1_prefix)
