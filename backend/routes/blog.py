@@ -8,7 +8,7 @@ blog_router = APIRouter(prefix=f"/blogs", tags=["Blog"])
 
 
 # create blog
-@blog_router.post("", response_model=schemas.Blog)
+@blog_router.post("", response_model=schemas.BlogCreate)
 def post_blog(blog: schemas.BlogCreate, db: Session = Depends(get_db)):
     return create_blog(db=db, blog=blog)
 

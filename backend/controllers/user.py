@@ -2,15 +2,9 @@ from sqlalchemy.orm import Session
 from ..schemas import user as schemas
 from ..models import user as models
 from passlib.context import CryptContext
-import jwt
 import os
-from datetime import datetime, timezone, timedelta
+from ..utilities.token import create_access_token
 from fastapi import HTTPException, status
-
-
-SECRET_KEY = os.getenv("SECRET_KEY")
-HASHING_ALGORITHM = os.getenv("HASHING_ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -21,19 +15,6 @@ def hash_password(password: str) -> str:
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
-
-
-def create_access_token(data: dict, expires_delta: timedelta = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(
-            minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES)
-        )
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=HASHING_ALGORITHM)
-    return encoded_jwt
 
 
 def get_user_by_email(db: Session, email: str):
@@ -57,9 +38,9 @@ def login_user(db: Session, user: schemas.UserLogin):
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
         )
 
-    token = create_access_token({"id": db_user.id, "name": db_user.name})
+    token = create_access_token({"id": db_user.id})
 
-    return {"authToken": token}
+    return {"access_token": token, "token_type": "bearer"}
 
 
 def create_user(db: Session, user: schemas.User):

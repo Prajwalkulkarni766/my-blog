@@ -7,6 +7,7 @@ class BlogBase(BaseModel):
     content: str
     image: str
     user_id: int
+    tags: str
 
 
 class BlogCreate(BlogBase):

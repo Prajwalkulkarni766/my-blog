@@ -11,4 +11,5 @@ class Blog(Base):
     clap_count = Column(Integer, default=0)
     comment_count = Column(Integer, default=0)
     image = Column(String(255), default="")
+    tags = Column(String(2000), default="")
     user_id = Column(Integer, ForeignKey("user.id"))
