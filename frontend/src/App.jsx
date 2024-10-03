@@ -1,5 +1,5 @@
 import React from "react";
-// import PrivateRoute from "./pages/private/PrivateRoute";
+import PrivateRoute from "./pages/privateRoute";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Loading from "./components/Loading";
 import { ToastContainer } from "react-toastify";
@@ -30,7 +30,11 @@ const router = createBrowserRouter([
   },
   {
     path: "home",
-    element: <Home />,
+    element: (
+      <PrivateRoute>
+        <Home />,
+      </PrivateRoute>
+    ),
   },
   {
     path: "blog",
@@ -38,15 +42,27 @@ const router = createBrowserRouter([
   },
   {
     path: "write",
-    element: <Write />,
+    element: (
+      <PrivateRoute>
+        <Write />,
+      </PrivateRoute>
+    ),
   },
   {
     path: "notifications",
-    element: <Notification />,
+    element: (
+      <PrivateRoute>
+        <Notification />
+      </PrivateRoute>
+    ),
   },
   {
     path: "profile",
-    element: <Profile />,
+    element: (
+      <PrivateRoute>
+        <Profile />
+      </PrivateRoute>
+    ),
   },
   {
     path: "*",

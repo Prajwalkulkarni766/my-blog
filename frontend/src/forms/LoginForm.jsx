@@ -4,12 +4,14 @@ import Toast from "../helper/Toast";
 import axiosInstance from "../axios/axiosInstance";
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { setToken } from "../redux/auth.slice";
+import { useDispatch } from "react-redux";
 
-export default function SignupForm({ buttonTxt }) {
+export default function LoginForm({ buttonTxt }) {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const signupSchema = Yup.object({
-    name: Yup.string().required("User name requried"),
+  const loginSchema = Yup.object({
     email: Yup.string()
       .email("Invalid Email Address")
       .required("Email Address Required"),
@@ -17,29 +19,25 @@ export default function SignupForm({ buttonTxt }) {
       .min(8, "Too Short Password!")
       .max(16, "Too Long Password!")
       .required("Password Required"),
-    confirmPassword: Yup.string()
-      .oneOf([Yup.ref("password"), null], "Passwords must match")
-      .required("Confirm Password Required"),
   });
 
   const formik = useFormik({
     initialValues: {
-      name: "",
       email: "",
       password: "",
-      confirmPassword: "",
-      about: "",
     },
-    validationSchema: signupSchema,
+    validationSchema: loginSchema,
     onSubmit: async (values) => {
       try {
-        console.log(values);
-        const response = await axiosInstance.post("/v1/auth/signup", values);
+        const response = await axiosInstance.post("/v1/auth/login", values);
 
-        // Successful signup
+        // Successful login
         if (response.status === 200) {
-          Toast.success("Signup successfully");
-          navigate("/login");
+          Toast.success("Login successfully");
+          const token = response.data.access_token;
+          localStorage.setItem("access_token", token);
+          dispatch(setToken(token));
+          navigate("/home");
         } else {
           throw new Error("Unexpected status code received");
         }
@@ -54,28 +52,7 @@ export default function SignupForm({ buttonTxt }) {
   return (
     <>
       <div>
-        <form onSubmit={formik.handleSubmit}>
-          <div className="mb-3">
-            <label htmlFor="user_name" className="form-label">
-              User Name
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              id="user_name"
-              name="name"
-              value={formik.values.name}
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              aria-describedby="userHelp"
-            />
-            <div id="userHelp" className="form-text">
-              User name must be unique.
-            </div>
-            {formik.touched.name && formik.errors.name ? (
-              <div className="text-danger">{formik.errors.name}</div>
-            ) : null}
-          </div>
+        <form>
           <div className="mb-3">
             <label htmlFor="email_address" className="form-label">
               Email address
@@ -112,23 +89,6 @@ export default function SignupForm({ buttonTxt }) {
             />
             {formik.touched.password && formik.errors.password ? (
               <div className="text-danger">{formik.errors.password}</div>
-            ) : null}
-          </div>
-          <div className="mb-3">
-            <label htmlFor="confirm_password" className="form-label">
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              className="form-control"
-              id="confirm_password"
-              name="confirmPassword"
-              value={formik.values.confirmPassword}
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-            />
-            {formik.touched.confirmPassword && formik.errors.confirmPassword ? (
-              <div className="text-danger">{formik.errors.confirmPassword}</div>
             ) : null}
           </div>
           <button

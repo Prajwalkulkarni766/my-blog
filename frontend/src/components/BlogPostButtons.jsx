@@ -7,7 +7,6 @@ import listen from "../assets/listen.svg";
 import stop from "../assets/stop.svg";
 
 export default function BlogPostButtons() {
-
   const [isListening, setIsListening] = useState(false);
 
   function readBlog() {
@@ -38,16 +37,14 @@ export default function BlogPostButtons() {
     speechSynthesis.speak(utterance);
   }
 
-
   const handleListen = () => {
     if (isListening) {
       speechSynthesis.cancel();
     } else {
       readBlog();
     }
-    setIsListening(prev => !prev);
+    setIsListening((prev) => !prev);
   };
-  
 
   useEffect(() => {
     const tooltipTriggerList = document.querySelectorAll(

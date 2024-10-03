@@ -29,7 +29,7 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      <div className="container mt-5">
+      <div className="container mt-4">
         <div className="row">
           <div className="col-lg-4 d-none d-lg-block">
             <h1>Hello Ram !</h1>
