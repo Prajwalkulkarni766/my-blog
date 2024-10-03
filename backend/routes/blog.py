@@ -1,14 +1,36 @@
 from fastapi import APIRouter, Depends
 from ..schemas import blog as schemas
 from ..configs.db import get_db
-from ..controllers.blog import create_blog, update_blog, delete_blog
+from ..controllers.blog import (
+    create_blog,
+    update_blog,
+    delete_blog,
+    recommend_blog,
+    get_blog,
+)
 from sqlalchemy.orm import Session
+from typing import List
+from ..utilities.token import oauth2_scheme
 
 blog_router = APIRouter(prefix=f"/blogs", tags=["Blog"])
 
 
+# get blog
+@blog_router.get("/{blog_id}", response_model=schemas.Blog)
+def get_requested_blog(
+    blog_id: int, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
+):
+    return get_blog(db=db, blog_id=blog_id, token=token)
+
+
+# recommend blog
+@blog_router.get("/", response_model=List[schemas.BlogStr])
+def get_recommended_blogs(db: Session = Depends(get_db)):
+    return recommend_blog(db=db)
+
+
 # create blog
-@blog_router.post("", response_model=schemas.BlogCreate)
+@blog_router.post("/", response_model=schemas.BlogCreate)
 def post_blog(blog: schemas.BlogCreate, db: Session = Depends(get_db)):
     return create_blog(db=db, blog=blog)
 

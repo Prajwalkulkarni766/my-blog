@@ -1,6 +1,10 @@
+from fastapi import Depends, HTTPException
+
 from ..schemas import blog as schemas
 from ..models import blog as models
+from ..models.history import History
 from sqlalchemy.orm import Session
+from ..utilities.token import get_current_user, oauth2_scheme
 
 import numpy as np
 import pandas as pd
@@ -17,8 +21,7 @@ from fuzzywuzzy import process
 from transformers import pipeline
 
 stop_words = set(stopwords.words("english"))
-
-# summarizer = pipeline("summarization")
+cv = CountVectorizer(max_features=5000, stop_words="english")
 
 
 def clean_text(text):
@@ -33,17 +36,80 @@ def remove_stopwords(text):
     return " ".join(filtered_text)
 
 
-def create_blog(db: Session, blog: schemas.Blog):
-    # summarizing data
-    # summary = summarizer(blog.content, max_length=50, min_length=25, do_sample=False)
-    # print("summary", summary[0]['summary_text'], "\n\n\n\n\n")
+def get_blog(db: Session, blog_id: int, token: str):
+    decoded_token = get_current_user(token)
+    blog = db.query(models.Blog).filter(models.Blog.id == blog_id).first()
 
+    if blog is None:
+        raise HTTPException(status_code=404, detail="Blog not found")
+
+    try:
+        db_add_history = History(
+            blog_id=blog_id,
+            user_id=decoded_token["id"],
+            blog_title=blog.title,
+            blog_sub_title=blog.sub_title,
+            blog_tags=blog.tags, 
+        )
+        db.add(db_add_history)
+        db.commit()
+        db.refresh(db_add_history)  # Refresh to get updated data
+    except Exception as e:
+        print("Error adding history: ", e)
+        db.rollback()  # Rollback the transaction in case of error
+        raise HTTPException(status_code=500, detail="Error adding history")
+
+    print("blog_id = ", blog_id)
+    return blog
+
+
+def get_blogs(db: Session):
+    return db.query(models.Blog).all()
+
+
+def recommend_blog(db: Session, tags="python"):
+    tags = tags.str.lower()
+    blogs = get_blogs(db=db)
+    blog_df = pd.DataFrame(
+        [
+            {
+                "id": blog.id,
+                "title": blog.title,
+                "sub_title": blog.sub_title,
+                "tags": blog.tags,
+            }
+            for blog in blogs
+        ]
+    )
+    vectors = cv.fit_transform(blog_df["tags"]).toarray()
+    similarity = cosine_similarity(vectors)
+
+    blog_index = blog_df[blog_df["tags"] == tags].index[0]
+    distances = similarity[blog_index]
+    blog_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])[
+        1:6
+    ]
+
+    recommended_blogs = []
+    for i in blog_list:
+        blog_idx = i[0]
+        recommended_blogs.append(
+            {
+                "id": blog_df.iloc[blog_idx].id,
+                "title": blog_df.iloc[blog_idx].title,
+                "sub_title": blog_df.iloc[blog_idx].sub_title,
+            }
+        )
+
+    return recommended_blogs
+
+
+def create_blog(db: Session, blog: schemas.Blog):
     # cleaning the data and creating tags
     cleaned_blog_title = clean_text(blog.title)
     cleaned_blog_sub_title = clean_text(blog.sub_title)
     cleaned_blog_title = remove_stopwords(cleaned_blog_title)
     cleaned_blog_sub_title = remove_stopwords(cleaned_blog_sub_title)
-    # print(cleaned_blog_sub_title , " and ", cleaned_blog_title)
 
     db_blog = models.Blog(
         title=blog.title,

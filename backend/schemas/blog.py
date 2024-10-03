@@ -18,6 +18,12 @@ class BlogUpdate(BlogBase):
     id: int
 
 
+class BlogStr(BaseModel):
+    id: int
+    title: str
+    sub_title: str
+
+
 class Blog(BlogBase):
     id: int
     clap_count: int

@@ -26,21 +26,23 @@ def get_users(db: Session, skip: int = 0, limit: int = 100):
 
 
 def login_user(db: Session, user: schemas.UserLogin):
-    db_user = db.query(models.User).filter(models.User.email == user.email).first()
+    try:
+        db_user = db.query(models.User).filter(models.User.email == user.email).first()
 
-    if db_user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
-        )
+        if db_user is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
+            )
 
-    if not verify_password(user.password, db_user.password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
-        )
+        if not verify_password(user.password, db_user.password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
+            )
 
-    token = create_access_token({"id": db_user.id})
-
-    return {"access_token": token, "token_type": "bearer"}
+        token = create_access_token({"id": db_user.id})
+        return {"access_token": token, "token_type": "bearer"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
 
 def create_user(db: Session, user: schemas.User):

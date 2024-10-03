@@ -5,8 +5,8 @@ class UserBase(BaseModel):
     email: str
     name: str
     password: str
-    about: str
-    is_active: bool
+    about: str = ""
+    is_active: bool = True
 
 
 class UserCreate(UserBase):
@@ -24,6 +24,6 @@ class UserLogin(BaseModel):
 
 class User(UserBase):
     id: int
-
+    confirmPassword: str
     class Config:
         orm_model = True

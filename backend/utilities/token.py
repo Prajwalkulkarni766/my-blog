@@ -34,9 +34,7 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
 
 def verify_token(token: str):
     try:
-        print("token : ", token)
         payload = jwt.decode(token, SECRET_KEY, algorithms=[HASHING_ALGORITHM])
-        print(payload)
         return payload
     except PyJWTError:
         raise HTTPException(status_code=401, detail="Invalid token")

@@ -5,7 +5,8 @@ class HistoryBase(BaseModel):
     user_id: int
     blog_id: int
     blog_title: str
-    blog_subtitle: str
+    blog_sub_title: str
+    blog_tags: str
 
 
 class HistoryCreate(HistoryBase):
