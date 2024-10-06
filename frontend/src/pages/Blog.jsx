@@ -3,6 +3,12 @@ import profile_photo from "../assets/profile_photo.jpg";
 import BlogPostButtons from "../components/BlogPostButtons";
 import Navbar from "../components/Navbar";
 import BlogCard from "../components/BlogCard";
+import ButtonGroup from "../components/ButtonGroup";
+import like from "../assets/like.svg";
+import comment from "../assets/comment.svg";
+import readLater from "../assets/readLater.svg";
+import share from "../assets/share.svg";
+import listen from "../assets/listen.svg";
 
 export default function Blog() {
   // function readBlog() {
@@ -39,6 +45,61 @@ export default function Blog() {
   //   };
   // }, []);
 
+  const handleClap = () => {
+    /* Handle clap action */
+  };
+  const handleComment = () => {
+    /* Handle comment action */
+  };
+  const handleReadLater = () => {
+    /* Handle read later action */
+  };
+  const handleShare = () => {
+    /* Handle share action */
+  };
+  const handleListen = () => {
+    /* Handle listen action */
+  };
+
+  const buttons = [
+    {
+      label: "Clap",
+      icon: like,
+      onClick: handleClap,
+      tooltip: "Clap",
+      position: "left",
+      count: 10
+    },
+    {
+      label: "Comment",
+      icon: comment,
+      onClick: handleComment,
+      tooltip: "Comment",
+      position: "left",
+      count: 5
+    },
+    {
+      label: "Read Later",
+      icon: readLater,
+      onClick: handleReadLater,
+      tooltip: "Read Later",
+      position: "right",
+    },
+    {
+      label: "Share",
+      icon: share,
+      onClick: handleShare,
+      tooltip: "Share",
+      position: "right",
+    },
+    {
+      label: "Listen",
+      icon: listen,
+      onClick: handleListen,
+      tooltip: "Listen",
+      position: "right",
+    },
+  ];
   return (
     <>
       <Navbar />
@@ -80,7 +141,7 @@ export default function Blog() {
         <hr />
 
         {/* actions buttons for post */}
-        <BlogPostButtons />
+        <ButtonGroup buttons={buttons} />
 
         <hr />
 

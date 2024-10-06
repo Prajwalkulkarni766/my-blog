@@ -1,36 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  history: [
-    {
-      id: 1,
-      cardTitle: "Card title",
-      cardText:
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Neque eaque necessitatibus voluptatibus nesciunt, accusantium libero?",
-      readDate: "01-01-2000",
-    },
-    {
-      id: 2,
-      cardTitle: "Card title",
-      cardText:
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Neque eaque necessitatibus voluptatibus nesciunt, accusantium libero?",
-      readDate: "01-01-2000",
-    },
-    {
-      id: 3,
-      cardTitle: "Card title",
-      cardText:
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Neque eaque necessitatibus voluptatibus nesciunt, accusantium libero?",
-      readDate: "01-01-2000",
-    },
-    {
-      id: 4,
-      cardTitle: "Card title",
-      cardText:
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Neque eaque necessitatibus voluptatibus nesciunt, accusantium libero?",
-      readDate: "01-01-2000",
-    },
-  ],
+  page: 1,
+  history: [],
 };
 
 const historySlice = createSlice({
@@ -38,15 +10,26 @@ const historySlice = createSlice({
   initialState,
   reducers: {
     setHistory(state, action) {
-      state.history = [...action.payload];
+      state.history = [...state.history, ...action.payload];
     },
-    removeHistory: (state, action) => {
+    setHistoryPage(state, action) {
+      state.page = action.payload;
+    },
+    removeHistoryItem: (state, action) => {
       state.history = state.history.filter(
         (item) => item.id !== action.payload,
       );
     },
+    clearAllHistory: (state) => {
+      state.history = [];
+    },
   },
 });
 
-export const { setHistory, removeHistory } = historySlice.actions;
+export const {
+  setHistory,
+  setHistoryPage,
+  removeHistoryItem,
+  clearAllHistory,
+} = historySlice.actions;
 export default historySlice.reducer;

@@ -1,11 +1,13 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 
 export default function CustomTextArea({
   contentType,
   placeholder,
   className,
+  value,
+  onBlur,
+  onChange,
 }) {
-  const [value, setValue] = useState("");
   const textareaRef = useRef(null);
 
   const adjustHeight = () => {
@@ -24,9 +26,10 @@ export default function CustomTextArea({
       ref={textareaRef}
       value={value}
       onChange={(e) => {
-        setValue(e.target.value);
+        onChange(e);
         adjustHeight();
       }}
+      onBlur={onBlur}
       placeholder={placeholder}
       className={`write-blog-textarea ${contentType} ${className}`}
     />

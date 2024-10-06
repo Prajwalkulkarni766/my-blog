@@ -1,31 +1,37 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import Notification from "../components/Notification";
+import Toast from "../helper/Toast";
+import axiosInstance from "../axios/axiosInstance";
 
 const NotificationPage = () => {
-  const [notifications, setNotifications] = useState([
-    { id: 1, message: "This is a success notification!", type: "success" },
-    { id: 2, message: "This is a warning notification!", type: "warning" },
-    { id: 3, message: "This is an error notification!", type: "danger" },
-    { id: 1, message: "This is a success notification!", type: "success" },
-    { id: 2, message: "This is a warning notification!", type: "warning" },
-    { id: 3, message: "This is an error notification!", type: "danger" },
-    { id: 1, message: "This is a success notification!", type: "success" },
-    { id: 2, message: "This is a warning notification!", type: "warning" },
-    { id: 3, message: "This is an error notification!", type: "danger" },
-    { id: 1, message: "This is a success notification!", type: "success" },
-    { id: 2, message: "This is a warning notification!", type: "warning" },
-    { id: 3, message: "This is an error notification!", type: "danger" },
-    { id: 1, message: "This is a success notification!", type: "success" },
-    { id: 2, message: "This is a warning notification!", type: "warning" },
-    { id: 3, message: "This is an error notification!", type: "danger" },
-  ]);
+  const [notifications, setNotifications] = useState([]);
 
   const handleNotificationClose = (id) => {
     setNotifications(
       notifications.filter((notification) => notification.id !== id),
     );
   };
+
+  const getNotifications = async () => {
+    try {
+      const response = await axiosInstance.get("/v1/notifications");
+
+      if (response.status === 200) {
+        setNotifications(response.data);
+      } else {
+        throw new Error("Unexpected status code received");
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "An error occurred.";
+      Toast.error(errorMessage);
+    }
+  };
+
+  useEffect(() => {
+    getNotifications();
+  }, []);
 
   return (
     <>
@@ -37,16 +43,13 @@ const NotificationPage = () => {
           style={{ maxHeight: "74vh", overflowY: "scroll" }}
         >
           {notifications.length === 0 ? (
-            <div className="alert alert-info" role="alert">
-              No notifications to display.
-            </div>
+            <p className="text-center">No notifications to display.</p>
           ) : (
-            notifications.map((notification) => (
+            notifications.map((notification, index) => (
               <Notification
-                key={notification.id}
-                message={notification.message}
-                type={notification.type}
-                dismissible={true}
+                key={index}
+                notification_title={notification.notification_title}
+                notification_body={notification.notification_body}
                 onClose={() => handleNotificationClose(notification.id)}
               />
             ))

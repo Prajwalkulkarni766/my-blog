@@ -1,6 +1,10 @@
 import React from "react";
-import BlogPostButtons from "./BlogPostButtons";
+import ButtonGroup from "./ButtonGroup";
 import { NavLink } from "react-router-dom";
+import like from "../assets/like.svg";
+import comment from "../assets/comment.svg";
+import readLater from "../assets/readLater.svg";
+import share from "../assets/share.svg";
 
 export default function BlogPostCard({
   cardTitle,
@@ -8,6 +12,52 @@ export default function BlogPostCard({
   cardImage,
   postDate,
 }) {
+  const handleClap = () => {
+    /* Handle clap action */
+  };
+  const handleComment = () => {
+    /* Handle comment action */
+  };
+  const handleReadLater = () => {
+    /* Handle read later action */
+  };
+  const handleShare = () => {
+    /* Handle share action */
+  };
+
+  const buttons = [
+    {
+      label: "Clap",
+      icon: like,
+      onClick: handleClap,
+      tooltip: "Clap",
+      position: "left",
+      count: 10
+    },
+    {
+      label: "Comment",
+      icon: comment,
+      onClick: handleComment,
+      tooltip: "Comment",
+      position: "left",
+      count: 5
+    },
+    {
+      label: "Read Later",
+      icon: readLater,
+      onClick: handleReadLater,
+      tooltip: "Read Later",
+      position: "right",
+    },
+    {
+      label: "Share",
+      icon: share,
+      onClick: handleShare,
+      tooltip: "Share",
+      position: "right",
+    },
+  ];
+
   return (
     <>
       <div className="card mb-3 shadow-sm p-3 mb-2 bg-body-tertiary rounded">
@@ -25,11 +75,13 @@ export default function BlogPostCard({
             </div>
           </div>
           <div className="col-4 d-flex justify-content-end align-items-center">
-            <img src={cardImage} className="img-fluid rounded" alt="abc" />
+            {cardImage && (
+              <img src={cardImage} className="img-fluid rounded" alt="abc" />
+            )}
           </div>
         </NavLink>
         <div className="card-footer bg-transparent ">
-          <BlogPostButtons />
+          <ButtonGroup buttons={buttons} />
         </div>
       </div>
     </>

@@ -23,10 +23,10 @@ export default function Navbar() {
     navigate(`/blog?searchTerm=${searchTerm}`);
   };
 
-  const logOut = () =>{
-    dispatch(setToken(null))
-    localStorage.removeItem("access_token")
-  }
+  const logOut = () => {
+    dispatch(setToken(null));
+    localStorage.removeItem("access_token");
+  };
 
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary">
@@ -86,7 +86,9 @@ export default function Navbar() {
                 ))}
 
                 <li className="nav-item">
-                    <button onClick={logOut} className="btn my-btn">Log out</button>
+                  <button onClick={logOut} className="btn my-btn">
+                    Log out
+                  </button>
                 </li>
               </>
             )}

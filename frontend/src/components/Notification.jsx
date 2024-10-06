@@ -1,9 +1,13 @@
 import React from "react";
 
-export default function Notification({ type }) {
+export default function Notification({
+  notification_title,
+  notification_body,
+}) {
   return (
-    <div class={`alert alert-${type}`} role="alert">
-      A simple light alert—check it out!
+    <div className={`alert alert-light`} role="alert">
+      <h2>{notification_title}</h2>
+      <p>{notification_body}</p>
     </div>
   );
 }

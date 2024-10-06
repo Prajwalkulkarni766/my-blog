@@ -2,43 +2,47 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import Toast from "../helper/Toast";
 import axiosInstance from "../axios/axiosInstance";
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 
-export default function SignupForm({ buttonTxt }) {
-  const navigate = useNavigate();
+export default function ProfileForm({ buttonTxt }) {
+  const [data, setData] = useState({});
 
-  const signupSchema = Yup.object({
-    name: Yup.string().required("User name requried"),
-    email: Yup.string()
-      .email("Invalid Email Address")
-      .required("Email Address Required"),
-    password: Yup.string()
-      .min(8, "Too Short Password!")
-      .max(16, "Too Long Password!")
-      .required("Password Required"),
-    confirmPassword: Yup.string()
-      .oneOf([Yup.ref("password"), null], "Passwords must match")
-      .required("Confirm Password Required"),
+  const getProfile = async () => {
+    try {
+      const response = await axiosInstance.get("/v1/users");
+
+      if (response.status === 200) {
+        setData(response.data);
+      } else {
+        throw new Error("Unexpected status code received");
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "An error occurred.";
+      Toast.error(errorMessage);
+    }
+  };
+
+  const profileSchema = Yup.object({
+    name: Yup.string().required(),
+    email: Yup.string().email("Invalid Email Address").required(),
+    about: Yup.string().required(),
   });
 
   const formik = useFormik({
     initialValues: {
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      about: "",
+      name: data.name || "",
+      email: data.email || "",
+      about: data.about || "",
     },
-    validationSchema: signupSchema,
+    validationSchema: profileSchema,
     onSubmit: async (values) => {
       try {
-        const response = await axiosInstance.post("/v1/auth/signup", values);
+        const response = await axiosInstance.patch("/v1/users", values);
 
-        // Successful signup
         if (response.status === 200) {
-          Toast.success("Signup successfully");
-          navigate("/login");
+          setData(response.data);
+          Toast.success("Profile updated successfully");
         } else {
           throw new Error("Unexpected status code received");
         }
@@ -48,7 +52,12 @@ export default function SignupForm({ buttonTxt }) {
         Toast.error(errorMessage);
       }
     },
+    enableReinitialize: true, // Ensure Formik reinitializes with new data
   });
+
+  useEffect(() => {
+    getProfile();
+  }, []);
 
   return (
     <>
@@ -97,46 +106,11 @@ export default function SignupForm({ buttonTxt }) {
             ) : null}
           </div>
           <div className="mb-3">
-            <label htmlFor="password" className="form-label">
-              Password
-            </label>
-            <input
-              type="password"
-              className="form-control"
-              id="password"
-              name="password"
-              value={formik.values.password}
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-            />
-            {formik.touched.password && formik.errors.password ? (
-              <div className="text-danger">{formik.errors.password}</div>
-            ) : null}
-          </div>
-          <div className="mb-3">
-            <label htmlFor="confirm_password" className="form-label">
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              className="form-control"
-              id="confirm_password"
-              name="confirmPassword"
-              value={formik.values.confirmPassword}
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-            />
-            {formik.touched.confirmPassword && formik.errors.confirmPassword ? (
-              <div className="text-danger">{formik.errors.confirmPassword}</div>
-            ) : null}
-          </div>
-          <div className="mb-3">
             <label htmlFor="about" className="form-label">
               About
             </label>
             <textarea
               rows={3}
-              type="text"
               className="form-control"
               id="about"
               name="about"
@@ -148,11 +122,7 @@ export default function SignupForm({ buttonTxt }) {
               <div className="text-danger">{formik.errors.about}</div>
             ) : null}
           </div>
-          <button
-            type="submit"
-            className="btn my-btn"
-            onClick={formik.handleSubmit}
-          >
+          <button type="submit" className="btn my-btn">
             {buttonTxt}
           </button>
         </form>
