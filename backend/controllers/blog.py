@@ -4,7 +4,7 @@ from ..schemas import blog as schemas
 from ..models import blog as models
 from ..models.history import History
 from sqlalchemy.orm import Session
-from ..utilities.token import get_current_user, oauth2_scheme
+from ..utilities.token import get_current_user
 
 import numpy as np
 import pandas as pd
@@ -49,7 +49,7 @@ def get_blog(db: Session, blog_id: int, token: str):
             user_id=decoded_token["id"],
             blog_title=blog.title,
             blog_sub_title=blog.sub_title,
-            blog_tags=blog.tags, 
+            blog_tags=blog.tags,
         )
         db.add(db_add_history)
         db.commit()
@@ -59,7 +59,6 @@ def get_blog(db: Session, blog_id: int, token: str):
         db.rollback()  # Rollback the transaction in case of error
         raise HTTPException(status_code=500, detail="Error adding history")
 
-    print("blog_id = ", blog_id)
     return blog
 
 
@@ -67,8 +66,7 @@ def get_blogs(db: Session):
     return db.query(models.Blog).all()
 
 
-def recommend_blog(db: Session, tags="python"):
-    tags = tags.str.lower()
+def recommend_blog(db: Session, page: int, limit: int, tags="python"):
     blogs = get_blogs(db=db)
     blog_df = pd.DataFrame(
         [
@@ -77,6 +75,9 @@ def recommend_blog(db: Session, tags="python"):
                 "title": blog.title,
                 "sub_title": blog.sub_title,
                 "tags": blog.tags,
+                "clap_count": blog.clap_count,
+                "comment_count": blog.comment_count,
+                "created_at": blog.created_at,
             }
             for blog in blogs
         ]
@@ -86,25 +87,31 @@ def recommend_blog(db: Session, tags="python"):
 
     blog_index = blog_df[blog_df["tags"] == tags].index[0]
     distances = similarity[blog_index]
-    blog_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])[
-        1:6
-    ]
+    blog_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])[1:]
+
+    start_idx = (page - 1) * limit
+    end_idx = start_idx + limit
 
     recommended_blogs = []
-    for i in blog_list:
+
+    for i in blog_list[start_idx:end_idx]:
         blog_idx = i[0]
         recommended_blogs.append(
             {
                 "id": blog_df.iloc[blog_idx].id,
                 "title": blog_df.iloc[blog_idx].title,
                 "sub_title": blog_df.iloc[blog_idx].sub_title,
+                "clap_count": blog_df.iloc[blog_idx].clap_count,
+                "comment_count": blog_df.iloc[blog_idx].comment_count,
+                "created_at": blog_df.iloc[blog_idx].created_at,
             }
         )
 
     return recommended_blogs
 
 
-def create_blog(db: Session, blog: schemas.Blog):
+def create_blog(db: Session, blog: schemas.BlogBase, token: str):
+    decoded_token = get_current_user(token)
     # cleaning the data and creating tags
     cleaned_blog_title = clean_text(blog.title)
     cleaned_blog_sub_title = clean_text(blog.sub_title)
@@ -115,8 +122,8 @@ def create_blog(db: Session, blog: schemas.Blog):
         title=blog.title,
         sub_title=blog.sub_title,
         content=blog.content,
-        user_id=blog.user_id,
-        tags=cleaned_blog_title + " " + cleaned_blog_sub_title,
+        user_id=decoded_token["id"],
+        tags=cleaned_blog_title + " " + cleaned_blog_sub_title + " " + blog.tags,
     )
     db.add(db_blog)
     db.commit()

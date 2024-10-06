@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, func
 from ..configs.db import Base
 
 
@@ -10,3 +10,4 @@ class History(Base):
     blog_title = Column(String(255))
     blog_sub_title = Column(String(255))
     blog_tags = Column(String(2000))
+    created_at = Column(DateTime, default=func.now())

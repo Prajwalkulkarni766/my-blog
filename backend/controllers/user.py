@@ -5,6 +5,7 @@ from passlib.context import CryptContext
 import os
 from ..utilities.token import create_access_token
 from fastapi import HTTPException, status
+from ..utilities.token import get_current_user
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -21,8 +22,9 @@ def get_user_by_email(db: Session, email: str):
     user = db.query(models.User).filter(models.User.email == email).first()
 
 
-def get_users(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.User).offset(skip).limit(limit).all()
+def get_users(db: Session, token: str, skip: int = 0, limit: int = 100):
+    decoded_token = get_current_user(token)
+    return db.query(models.User).filter(models.User.id == decoded_token["id"]).first()
 
 
 def login_user(db: Session, user: schemas.UserLogin):
@@ -61,15 +63,16 @@ def create_user(db: Session, user: schemas.User):
     return db_user
 
 
-def update_user(db: Session, user_id: int, user: schemas.User):
-    db_user = db.query(models.User).filter(models.User.id == user_id).first()
+def update_user(db: Session, user: schemas.BasicUserUpdate, token: str):
+    decoded_token = get_current_user(token)
+    db_user = (
+        db.query(models.User).filter(models.User.id == decoded_token["id"]).first()
+    )
     if db_user is None:
         return None
     db_user.name = user.name
     db_user.email = user.email
-    db_user.password = user.password
     db_user.about = user.about
-    db_user.is_active = user.is_active
     db.commit()
     db.refresh(db_user)
     return db_user

@@ -17,6 +17,12 @@ class UserUpdate(UserBase):
     id: int
 
 
+class BasicUserUpdate(BaseModel):
+    email: str
+    name: str
+    about: str
+
+
 class UserLogin(BaseModel):
     email: str
     password: str
@@ -25,5 +31,6 @@ class UserLogin(BaseModel):
 class User(UserBase):
     id: int
     confirmPassword: str
+
     class Config:
         orm_model = True

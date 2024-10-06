@@ -1,5 +1,6 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, func
 from ..configs.db import Base
+from datetime import datetime
 
 
 class Blog(Base):
@@ -13,3 +14,5 @@ class Blog(Base):
     image = Column(String(255), default="")
     tags = Column(String(2000), default="")
     user_id = Column(Integer, ForeignKey("user.id"))
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, onupdate=func.now())

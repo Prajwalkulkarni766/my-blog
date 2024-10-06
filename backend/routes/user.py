@@ -7,20 +7,25 @@ from ..controllers.user import (
     get_users,
 )
 from sqlalchemy.orm import Session
+from ..utilities.token import oauth2_scheme
 
 user_router = APIRouter(prefix="/users", tags=["User"])
 
 
 # get all user
-@user_router.get("/")
-def get_all_users(db: Session = Depends(get_db)):
-    return get_users(db=db)
+@user_router.get("")
+def get_all_users(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+    return get_users(db=db, token=token)
 
 
 # update user
-@user_router.patch("", response_model=schemas.User)
-def update_user(user: schemas.UserUpdate, db: Session = Depends(get_db)):
-    return update_user(db=db, user_id=user.id, user=user)
+@user_router.patch("", response_model=schemas.BasicUserUpdate)
+def update_the_user(
+    user: schemas.BasicUserUpdate,
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+):
+    return update_user(db=db, user=user, token=token)
 
 
 export = user_router

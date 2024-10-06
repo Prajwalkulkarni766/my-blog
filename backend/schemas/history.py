@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 
 class HistoryBase(BaseModel):
@@ -7,6 +8,13 @@ class HistoryBase(BaseModel):
     blog_title: str
     blog_sub_title: str
     blog_tags: str
+
+
+class HistoryGet(BaseModel):
+    id: int
+    blog_title: str
+    blog_sub_title: str
+    created_at: datetime
 
 
 class HistoryCreate(HistoryBase):

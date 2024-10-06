@@ -6,3 +6,9 @@ passlib==1.7.4
 SQLAlchemy==2.0.35
 fastapi[standard]==0.115.0
 PyMySQL==1.1.1
+transformers==4.45.1
+fuzzywuzzy==0.18.0
+scikit-learn==1.5.2
+nltk==3.9.1
+numpy==2.1.1
+pandas==2.2.3

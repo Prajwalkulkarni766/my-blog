@@ -16,7 +16,7 @@ def fetch_comments(blog_id: int, db: Session = Depends(get_db)):
 
 
 # add comment
-@comment_router.post("/")
+@comment_router.post("")
 def add_comment(comment: schemas.CommentCreate, db: Session = Depends(get_db)):
     return create_comment(db=db, comment=comment)
 

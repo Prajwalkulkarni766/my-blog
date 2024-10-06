@@ -25,17 +25,16 @@ app.add_middleware(
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"]
+    allow_headers=["*"],
 )
 
 version_1_prefix = "/api/v1"
 redis_conn = Redis(host="localhost", port=6379)
 task_queue = Queue("task_queue", connection=redis_conn)
 
+
 def print_number():
     print(random.randint())
-
-
 
 
 @app.get("/", tags=["Default"])
@@ -47,6 +46,7 @@ def root_location():
 def root_location():
     token = create_access_token({"id": 1})
     return {"access_token": token, "token_type": "bearer"}
+
 
 @app.post("/enqueue_task")
 def enqueue_task():

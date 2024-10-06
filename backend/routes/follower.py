@@ -26,7 +26,7 @@ def fetch_followed(user_id: int, db: Session = Depends(get_db)):
 
 
 # add follower
-@follwer_router.post("/")
+@follwer_router.post("")
 def generate_follower(follow: schemas.FollwerBase, db: Session = Depends(get_db)):
     return follow_someone(db=db, follow=follow)
 

@@ -24,15 +24,21 @@ def get_requested_blog(
 
 
 # recommend blog
-@blog_router.get("/", response_model=List[schemas.BlogStr])
-def get_recommended_blogs(db: Session = Depends(get_db)):
-    return recommend_blog(db=db)
+@blog_router.get("", response_model=List[schemas.BlogStr])
+def get_recommended_blogs(
+    page: int = 1, limit: int = 10, db: Session = Depends(get_db)
+):
+    return recommend_blog(db=db, page=page, limit=limit)
 
 
 # create blog
-@blog_router.post("/", response_model=schemas.BlogCreate)
-def post_blog(blog: schemas.BlogCreate, db: Session = Depends(get_db)):
-    return create_blog(db=db, blog=blog)
+@blog_router.post("", response_model=schemas.BlogCreate)
+def post_blog(
+    blog: schemas.BlogCreate,
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+):
+    return create_blog(db=db, blog=blog, token=token)
 
 
 # update blog

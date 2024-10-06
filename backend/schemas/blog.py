@@ -1,17 +1,22 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 
 class BlogBase(BaseModel):
     title: str
     sub_title: str
     content: str
-    image: str
+    image: str = ""
     user_id: int
     tags: str
 
 
-class BlogCreate(BlogBase):
-    pass
+class BlogCreate(BaseModel):
+    title: str
+    sub_title: str
+    content: str
+    image: str = ""
+    tags: str
 
 
 class BlogUpdate(BlogBase):
@@ -22,6 +27,9 @@ class BlogStr(BaseModel):
     id: int
     title: str
     sub_title: str
+    clap_count: int
+    comment_count: int
+    created_at: datetime
 
 
 class Blog(BlogBase):
