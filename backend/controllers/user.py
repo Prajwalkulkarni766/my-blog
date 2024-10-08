@@ -41,7 +41,7 @@ def login_user(db: Session, user: schemas.UserLogin):
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
             )
 
-        token = create_access_token({"id": db_user.id})
+        token = create_access_token({"id": db_user.id, "name": db_user.name})
         return {"access_token": token, "token_type": "bearer"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")

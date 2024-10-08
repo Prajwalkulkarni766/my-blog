@@ -6,8 +6,8 @@ class ClapBase(BaseModel):
     blog_id: int
 
 
-class ClapCreate(ClapBase):
-    pass
+class ClapCreate(BaseModel):
+    blog_id: int
 
 
 class Clap(ClapBase):

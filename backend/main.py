@@ -12,6 +12,7 @@ from .routes.comment import comment_router
 from .routes.blog import blog_router
 from .routes.notification import notification_router
 from .routes.follower import follwer_router
+from .routes.readlater import read_later_router
 
 from .utilities.token import get_current_user
 from .utilities.token import create_access_token
@@ -86,6 +87,11 @@ app.include_router(
 )
 app.include_router(
     follwer_router,
+    prefix=version_1_prefix,
+    dependencies=[Depends(get_current_user)],
+)
+app.include_router(
+    read_later_router,
     prefix=version_1_prefix,
     dependencies=[Depends(get_current_user)],
 )

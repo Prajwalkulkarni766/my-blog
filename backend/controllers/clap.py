@@ -2,11 +2,28 @@ from ..schemas import clap as schemas
 from ..models import clap as models
 from ..models import blog
 from sqlalchemy.orm import Session
+from ..utilities.token import get_current_user
+from sqlalchemy import and_
 
 
-def create_clap(db: Session, clap: schemas.Clap):
+def create_clap(db: Session, clap: schemas.Clap, token: str):
+    decoded_token = get_current_user(token)
+    exisiting_clap = (
+        db.query(models.Clap)
+        .filter(
+            and_(
+                models.Clap.blog_id == clap.blog_id,
+                models.Clap.user_id == decoded_token["id"],
+            )
+        )
+        .first()
+    )
+
+    if exisiting_clap:
+        return exisiting_clap
+
     db_clap = models.Clap(
-        user_id=clap.user_id,
+        user_id=decoded_token["id"],
         blog_id=clap.blog_id,
     )
 
