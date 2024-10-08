@@ -1,58 +1,59 @@
-import React from "react";
+import React, { useState } from "react";
 import ButtonGroup from "./ButtonGroup";
 import { NavLink } from "react-router-dom";
 import like from "../assets/like.svg";
 import comment from "../assets/comment.svg";
 import readLater from "../assets/readLater.svg";
 import share from "../assets/share.svg";
+import {
+  handleClap,
+  handleComment,
+  handleReadLater,
+  handleShare,
+} from "../utils/api.js";
+import ShareModal from "./ShareModal.jsx";
+import CommentModal from "./CommentModal.jsx";
 
 export default function BlogPostCard({
+  cardId,
   cardTitle,
   cardText,
   cardImage,
   postDate,
+  clapCount,
+  commentCount,
 }) {
-  const handleClap = () => {
-    /* Handle clap action */
-  };
-  const handleComment = () => {
-    /* Handle comment action */
-  };
-  const handleReadLater = () => {
-    /* Handle read later action */
-  };
-  const handleShare = () => {
-    /* Handle share action */
-  };
+  const [shareModalVisiable, setShareModalVisible] = useState(false);
+  const [commentModalVisible, setCommentModalVisible] = useState(false);
 
   const buttons = [
     {
       label: "Clap",
       icon: like,
-      onClick: handleClap,
+      onClick: () => handleClap(cardId),
       tooltip: "Clap",
       position: "left",
-      count: 10
+      count: clapCount,
     },
     {
       label: "Comment",
       icon: comment,
-      onClick: handleComment,
+      onClick: () => setCommentModalVisible(true),
       tooltip: "Comment",
       position: "left",
-      count: 5
+      count: commentCount,
     },
     {
       label: "Read Later",
       icon: readLater,
-      onClick: handleReadLater,
+      onClick: () => handleReadLater(cardId),
       tooltip: "Read Later",
       position: "right",
     },
     {
       label: "Share",
       icon: share,
-      onClick: handleShare,
+      onClick: () => setShareModalVisible(true),
       tooltip: "Share",
       position: "right",
     },
@@ -63,7 +64,7 @@ export default function BlogPostCard({
       <div className="card mb-3 shadow-sm p-3 mb-2 bg-body-tertiary rounded">
         <NavLink
           className="row g-0 cursor-pointer text-decoration-none text-body"
-          to={"/blog"}
+          to={`/blog?id=${cardId}`}
         >
           <div className="col-8">
             <div className="card-body">
@@ -83,6 +84,19 @@ export default function BlogPostCard({
         <div className="card-footer bg-transparent ">
           <ButtonGroup buttons={buttons} />
         </div>
+
+        {shareModalVisiable && (
+          <ShareModal
+            setShareModalVisible={setShareModalVisible}
+            blogId={cardId}
+          />
+        )}
+        {commentModalVisible && (
+          <CommentModal
+            setCommentModalVisible={setCommentModalVisible}
+            blogId={cardId}
+          />
+        )}
       </div>
     </>
   );

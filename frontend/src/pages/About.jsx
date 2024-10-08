@@ -7,7 +7,6 @@ import image3 from "../assets/image3.jpg";
 import { NavLink } from "react-router-dom";
 
 export default function About() {
-  // todo: add coursel of images present in assets folder
   return (
     <>
       <Navbar />

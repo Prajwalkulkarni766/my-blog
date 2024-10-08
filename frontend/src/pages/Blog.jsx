@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import profile_photo from "../assets/profile_photo.jpg";
+import React, { useEffect, useState } from "react";
+import user from "../assets/user.webp";
 import BlogPostButtons from "../components/BlogPostButtons";
 import Navbar from "../components/Navbar";
 import BlogCard from "../components/BlogCard";
@@ -9,57 +9,49 @@ import comment from "../assets/comment.svg";
 import readLater from "../assets/readLater.svg";
 import share from "../assets/share.svg";
 import listen from "../assets/listen.svg";
+import stop from "../assets/stop.svg";
+import {
+  handleClap,
+  handleComment,
+  handleListen,
+  handleReadLater,
+  handleShare,
+} from "../utils/api.js";
+import { getBlog } from "../utils/api.js";
 
 export default function Blog() {
-  // function readBlog() {
-  //   const utterance = new SpeechSynthesisUtterance();
-  //   utterance.text = `In the 1990s, Sony was preparing to launch a household robot. Their
-  //   technology was impressive but imperfect: the robot could mishear
-  //   commands or simply get them wrong. So, instead of launching the
-  //   product as a robot (think block-y design, 3CPO-like interface,
-  //   computer-like voice), the team launched it as a dog.
+  const [isBlogListening, setIsBlogListening] = useState(false);
+  const [blog, setBlog] = useState({
+    title: "",
+    sub_title: "",
+    content: "",
+    clap_count: 0,
+    comment_count: 0,
+  });
 
-  //   Lorem ipsum dolor sit amet consectetur adipisicing elit. Iste
-  //   distinctio odit tempora? Nihil earum dolorem, aperiam vitae debitis,
-  //   cum laudantium quaerat ipsa praesentium dolore omnis atque
-  //   aspernatur alias sint aliquid ipsum! Corporis quidem nemo maxime.
+  function readBlog() {
+    setIsBlogListening(true)
+    const utterance = new SpeechSynthesisUtterance();
+    utterance.text = `${blog.content} 
+      Lorem ipsum dolor sit, amet consectetur adipisicing elit. Dolorum pariatur, excepturi sed ipsum dolores, ipsa vitae odio quidem rem quam quisquam eveniet laborum facere! Accusantium, eaque eum dolor illo tempora minima odit illum. Explicabo saepe numquam dolore dolores ipsam maiores ad ullam, iste, architecto, doloribus ipsum? Debitis quibusdam fugit aperiam ut omnis non nobis harum.`;
+    speechSynthesis.speak(utterance);
+    utterance.onend = () => {
+      setIsBlogListening(false);
+    };
+  
+  }
 
-  //   Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident,
-  //   laboriosam aperiam velit in maiores fugiat iusto excepturi
-  //   blanditiis? Reiciendis tenetur at ea eaque! Enim sequi quod
-  //   deleniti, soluta excepturi doloribus, blanditiis molestias, officiis
-  //   sapiente dolorem unde labore ducimus id! Ad libero totam beatae?
-  //   Itaque delectus repellendus laudantium, nemo excepturi numquam
-  //   ratione temporibus vero cumque veniam velit a blanditiis sunt,
-  //   inventore veritatis commodi nobis fugit. Totam quo illum enim
-  //   impedit! Atque, sapiente doloribus ratione, omnis exercitationem
-  //   odit libero aspernatur totam possimus deserunt eaque! Ut,
-  //   repellendus laborum.
-  //   `;
-  //   speechSynthesis.speak(utterance);
-  // }
+  useEffect(() => {
+    return () => {
+      speechSynthesis.cancel();
+    };
+  }, []);
 
-  // useEffect(() => {
-  //   return () => {
-  //     speechSynthesis.cancel();
-  //   };
-  // }, []);
-
-  const handleClap = () => {
-    /* Handle clap action */
-  };
-  const handleComment = () => {
-    /* Handle comment action */
-  };
-  const handleReadLater = () => {
-    /* Handle read later action */
-  };
-  const handleShare = () => {
-    /* Handle share action */
-  };
-  const handleListen = () => {
-    /* Handle listen action */
-  };
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const blogId = params.get("id");
+    getBlog(blogId, setBlog);
+  }, []);
 
   const buttons = [
     {
@@ -68,7 +60,7 @@ export default function Blog() {
       onClick: handleClap,
       tooltip: "Clap",
       position: "left",
-      count: 10
+      count: blog.clap_count,
     },
     {
       label: "Comment",
@@ -76,7 +68,7 @@ export default function Blog() {
       onClick: handleComment,
       tooltip: "Comment",
       position: "left",
-      count: 5
+      count: blog.comment_count,
     },
     {
       label: "Read Later",
@@ -94,29 +86,27 @@ export default function Blog() {
     },
     {
       label: "Listen",
-      icon: listen,
-      onClick: handleListen,
+      icon: isBlogListening ? stop :  listen,
+      onClick: readBlog,
       tooltip: "Listen",
       position: "right",
     },
   ];
+
   return (
     <>
       <Navbar />
       <div className="container mt-5 my-container text-justify">
         {/* primary-heading */}
-        <h1>The AI Popularity contest</h1>
+        <h1>{blog.title}</h1>
 
         {/* secondary-heading  */}
-        <h4 className="text-secondary">
-          Analyzing the brand strategies of ChatGPT, Gemini, Claude, and
-          Perplexity
-        </h4>
+        <h4 className="text-secondary">{blog.sub_title}</h4>
 
         {/* user info display section */}
         <div className="d-flex gap-3 mt-5 mb-4">
           <img
-            src={profile_photo}
+            src={user}
             alt="User"
             className="user-photo img-fluid rounded-circle"
             style={{ height: "57px" }}
@@ -145,46 +135,12 @@ export default function Blog() {
 
         <hr />
 
-        <div className="mt-4">
-          <p>
-            In the 1990s, Sony was preparing to launch a household robot. Their
-            technology was impressive but imperfect: the robot could mishear
-            commands or simply get them wrong. So, instead of launching the
-            product as a robot (think block-y design, 3CPO-like interface,
-            computer-like voice), the team launched it as a dog.
-          </p>
-
-          <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Iste
-            distinctio odit tempora? Nihil earum dolorem, aperiam vitae debitis,
-            cum laudantium quaerat ipsa praesentium dolore omnis atque
-            aspernatur alias sint aliquid ipsum! Corporis quidem nemo maxime.
-          </p>
-
-          <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident,
-            laboriosam aperiam velit in maiores fugiat iusto excepturi
-            blanditiis? Reiciendis tenetur at ea eaque! Enim sequi quod
-            deleniti, soluta excepturi doloribus, blanditiis molestias, officiis
-            sapiente dolorem unde labore ducimus id! Ad libero totam beatae?
-            Itaque delectus repellendus laudantium, nemo excepturi numquam
-            ratione temporibus vero cumque veniam velit a blanditiis sunt,
-            inventore veritatis commodi nobis fugit. Totam quo illum enim
-            impedit! Atque, sapiente doloribus ratione, omnis exercitationem
-            odit libero aspernatur totam possimus deserunt eaque! Ut,
-            repellendus laborum.
-          </p>
-        </div>
+        <div className="mt-4">{blog.content}</div>
 
         <hr />
 
         {/* user profile card */}
         <div className="mt-4 mb-4">
-          <img
-            src={profile_photo}
-            alt="User"
-            className="user-photo img-fluid rounded-circle"
-          />
           <div className="d-flex flex-column">
             <div className="d-flex gap-3 mb-2 justify-content-center align-item-center">
               <div className="d-flex flex-column">

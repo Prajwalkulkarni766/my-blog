@@ -1,8 +1,18 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  page: 1,
-  blog: [],
+  page: {
+    foryou: 1,
+    following: 1,
+    trending: 1,
+    readlater: 1,
+  },
+  blogs: {
+    foryou: [],
+    following: [],
+    trending: [],
+    readlater: [],
+  },
 };
 
 const blogSlice = createSlice({
@@ -10,16 +20,15 @@ const blogSlice = createSlice({
   initialState,
   reducers: {
     setBlog(state, action) {
-      state.blog = [...state.blog, ...action.payload];
+      const { tab, blogs } = action.payload;
+      state.blogs[tab] = [...state.blogs[tab], ...blogs];
     },
-    setBlogPage(state, action) {
-      state.page = action.payload;
-    },
-    removeBlog: (state, action) => {
-      state.blog = state.blog.filter((item) => item.id !== action.payload);
+    setPage(state, action) {
+      const { tab, page } = action.payload;
+      state.page[tab] = page;
     },
   },
 });
 
-export const { setBlog, removeBlog, setBlogPage } = blogSlice.actions;
+export const { setBlog, setPage } = blogSlice.actions;
 export default blogSlice.reducer;

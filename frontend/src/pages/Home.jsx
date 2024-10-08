@@ -1,130 +1,52 @@
 import React, { useState, useEffect } from "react";
 import CustomBadge from "../components/CustomBadge";
 import BlogPostCard from "../components/BlogPostCard";
-import HistoryBlogCard from "../components/HistoryBlogCard";
+import BlogList from "../components/BlogList.jsx";
 import Navbar from "../components/Navbar";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  setHistory,
-  setHistoryPage,
-  removeHistoryItem,
-  clearAllHistory,
-} from "../redux/history.slice.js";
-import { setBlog, setBlogPage } from "../redux/blog.slice.js";
-import axiosInstance from "../axios/axiosInstance.js";
-import Toast from "../helper/Toast.js";
+  clearHistory,
+  clearParticularHistory,
+  getBlogs,
+  getHistory,
+  changeTab,
+} from "../utils/api.js";
+
+import History from "../components/History.jsx";
 
 export default function Home() {
   // states that holds history and blogs info
   const history = useSelector((state) => state.history.history);
-  const blogs = useSelector((state) => state.blog.blog);
+  const foryouBlogs = useSelector((state) => state.blog.blogs["foryou"]);
+  const followingBlogs = useSelector((state) => state.blog.blogs["following"]);
+  const trendingBlogs = useSelector((state) => state.blog.blogs["trending"]);
+  const readlaterBlogs = useSelector((state) => state.blog.blogs["readlater"]);
 
   // states that holds from which page to which page you have to fetch data
   let historyPage = useSelector((state) => state.history.page);
-  let blogPage = useSelector((state) => state.blog.page);
+  let forYouPage = useSelector((state) => state.blog.page["foryou"]);
+  let followingPage = useSelector((state) => state.blog.page["following"]);
+  let trendingPage = useSelector((state) => state.blog.page["trending"]);
+  let readLaterPage = useSelector((state) => state.blog.page["readlater"]);
 
   const dispatch = useDispatch();
 
   const [currentTab, setCurrentTab] = useState("foryou");
 
-  // this function will clear all history of user
-  const clearHistory = async () => {
-    try {
-      const response = await axiosInstance.delete("/v1/history");
-
-      if (response.status === 200) {
-        dispatch(clearAllHistory());
-        dispatch(setHistoryPage(1));
-      } else {
-        throw new Error("Unexpected status code received");
-      }
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || "An error occurred.";
-      Toast.error(errorMessage);
-    }
-  };
-
-  // this function will clear a particular history of user
-  const clearParticularBlog = async (id) => {
-    try {
-      const response = await axiosInstance.delete("/v1/history", {
-        params: {
-          id: id,
-        },
-      });
-
-      if (response.status === 200) {
-        dispatch(removeHistoryItem(id));
-      } else {
-        throw new Error("Unexpected status code received");
-      }
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || "An error occurred.";
-      Toast.error(errorMessage);
-    }
-  };
-
-  // this function will help you to change the tab
-  const changeTab = (tabName) => {
-    setCurrentTab(tabName);
-  };
-
-  // this function will fetch blogs for user from server
-  const getBlogs = async () => {
-    try {
-      const response = await axiosInstance.get("/v1/blogs", {
-        params: {
-          page: blogPage,
-        },
-      });
-
-      if (response.status === 200) {
-        dispatch(setBlog(response.data));
-        dispatch(setBlogPage(blogPage + 1));
-      } else {
-        throw new Error("Unexpected status code received");
-      }
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || "An error occurred.";
-      Toast.error(errorMessage);
-    }
-  };
-
-  // this function will fetch history of user from server
-  const getHistory = async () => {
-    try {
-      const response = await axiosInstance.get("/v1/history", {
-        params: {
-          page: historyPage,
-        },
-      });
-
-      if (response.status === 200) {
-        dispatch(setHistory(response.data));
-        dispatch(setHistoryPage(historyPage + 1));
-      } else {
-        throw new Error("Unexpected status code received");
-      }
-    } catch (error) {
-      console.error(error);
-      const errorMessage =
-        error.response?.data?.message || "An error occurred.";
-      Toast.error(errorMessage);
-    }
-  };
-
   useEffect(() => {
-    if (blogs.length <= 0) {
-      getBlogs();
+    if (currentTab === "foryou" && foryouBlogs.length <= 0) {
+      getBlogs(dispatch, "foryou", forYouPage);
+    } else if (currentTab === "following" && followingBlogs.length <= 0) {
+      getBlogs(dispatch, "following", followingPage);
+    } else if (currentTab === "trending" && trendingBlogs.length <= 0) {
+      getBlogs(dispatch, "trending", trendingPage);
+    } else if (currentTab === "readlater" && readlaterBlogs.length <= 0) {
+      getBlogs(dispatch, "readlater", readLaterPage);
     }
-    // if (history.length <= 0) {
-    //   dispatch(setHistoryPage(0));
-    //   getHistory();
-    // }
-  }, []);
+    if (history.length <= 0) {
+      getHistory(dispatch, historyPage);
+    }
+  }, [currentTab, dispatch]);
 
   return (
     <>
@@ -140,76 +62,65 @@ export default function Home() {
               <h6>History</h6>
               <h6
                 className="text-danger ms-auto cursor-pointer"
-                onClick={clearHistory}
+                onClick={() => clearHistory(dispatch)}
               >
                 Clear All
               </h6>
             </div>
             {/* showing history */}
-            {history.length == 0 ? (
-              <p className="text-center mt-3">No History available</p>
-            ) : (
-              <div
-                className="custom-scrollbar p-2"
-                style={{ maxHeight: "60vh", overflowY: "scroll" }}
-              >
-                {history.map((histroyCard, index) => (
-                  <HistoryBlogCard
-                    key={index}
-                    cardTitle={histroyCard.blog_title}
-                    cardText={histroyCard.blog_sub_title}
-                    readDate={histroyCard.created_at}
-                    onClick={() => clearParticularBlog(histroyCard.id)}
-                  />
-                ))}
-                <div className="d-grid">
-                  <button className="btn btn-light" onClick={getHistory}>
-                    Load more
-                  </button>
-                </div>
-              </div>
-            )}
+            <History
+              history={history}
+              clearParticularHistory={clearParticularHistory}
+              getHistory={getHistory}
+              dispatch={dispatch}
+              historyPage={historyPage}
+            />
           </div>
           <div className="col-lg-8 col-md-12">
             <ul className="nav gap-3">
-              <CustomBadge
-                content={"For You"}
-                isActive={currentTab === "foryou"}
-                onClick={() => changeTab("foryou")}
-              />
-              <CustomBadge
-                content={"Following"}
-                isActive={currentTab === "following"}
-                onClick={() => changeTab("following")}
-              />
-              <CustomBadge
-                content={"Trending"}
-                isActive={currentTab === "trending"}
-                onClick={() => changeTab("trending")}
-              />
-
-              <div
-                className="custom-scrollbar p-2"
-                style={{ maxHeight: "76vh", overflowY: "scroll" }}
-              >
-                {/* showing blogs */}
-                {blogs.map((blog, index) => (
-                  <BlogPostCard
-                    key={index}
-                    cardTitle={blog.title}
-                    cardText={blog.sub_title}
-                    cardImage={blog.cardImage}
-                    postDate={blog.created_at}
-                  />
-                ))}
-
-                <div className="d-grid">
-                  <button className="btn btn-light" onClick={getBlogs}>
-                    Load more
-                  </button>
-                </div>
-              </div>
+              {["foryou", "following", "trending", "readlater"].map((tab) => (
+                <CustomBadge
+                  key={tab}
+                  content={tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  isActive={currentTab === tab}
+                  onClick={() => changeTab(setCurrentTab, tab)}
+                />
+              ))}
             </ul>
+
+            {/* Use BlogList component for different tabs */}
+            {currentTab === "foryou" && (
+              <BlogList
+                blogs={foryouBlogs}
+                title="For You"
+                loadMore={() => getBlogs(dispatch, "foryou", forYouPage)}
+                noContentMessage="Please do some activities so we can suggest you blogs"
+              />
+            )}
+            {currentTab === "following" && (
+              <BlogList
+                blogs={followingBlogs}
+                title="Following"
+                loadMore={() => getBlogs(dispatch, "following", followingPage)}
+                noContentMessage="You are following no one"
+              />
+            )}
+            {currentTab === "trending" && (
+              <BlogList
+                blogs={trendingBlogs}
+                title="Trending"
+                loadMore={() => getBlogs(dispatch, "trending", trendingPage)}
+                noContentMessage="There is no blog in trending"
+              />
+            )}
+            {currentTab === "readlater" && (
+              <BlogList
+                blogs={readlaterBlogs}
+                title="Read Later"
+                loadMore={() => getBlogs(dispatch, "readlater", readLaterPage)}
+                noContentMessage="You have no blogs saved for later"
+              />
+            )}
           </div>
         </div>
       </div>
