@@ -1,6 +1,8 @@
-from ..schemas import follwer as schemas
-from ..models import follwer as models
+from ..schemas import follower as schemas
+from ..models import follower as models
 from sqlalchemy.orm import Session
+from ..utilities.token import get_current_user
+from sqlalchemy import and_
 
 
 def get_follwers_list(db: Session, user_id: int):
@@ -15,9 +17,10 @@ def get_followed_list(db: Session, user_id: int):
     )
 
 
-def follow_someone(db: Session, follow: schemas.Follwer):
+def follow_someone(db: Session, follow: schemas.Follower, token: str):
+    decoded_token = get_current_user(token)
     db_follwer = models.Follower(
-        follower_id=follow.follower_id, followed_id=follow.followed_id
+        follower_id=decoded_token["id"], followed_id=follow.followed_id
     )
     db.add(db_follwer)
     db.commit()
@@ -25,10 +28,18 @@ def follow_someone(db: Session, follow: schemas.Follwer):
     return db_follwer
 
 
-def unfollow(db: Session, follow_id: int):
+def unfollow(db: Session, followed_id: int, token: str):
+    decoded_token = get_current_user(token)
     db_follwer = (
-        db.query(models.Follower).filter(models.Follower.id == follow_id).first()
+        db.query(models.Follower)
+        .filter(
+            and_(
+                models.Follower.followed_id == followed_id,
+                models.Follower.follower_id == decoded_token["id"],
+            )
+        )
+        .first()
     )
     db.delete(db_follwer)
     db.commit()
-    return {"msg": "Comment deleted successfully"}
+    return {"msg": "Unfollowing writer"}

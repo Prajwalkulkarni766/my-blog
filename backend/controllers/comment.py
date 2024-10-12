@@ -10,6 +10,7 @@ from typing import List
 # def get_comments(db: Session, blog_id):
 #     return db.query(models.Comment).filter(blog.Blog.id == blog_id).first()
 
+
 def get_comments(db: Session, blog_id: int):
     results = (
         db.query(user.User.name, models.Comment.created_at, models.Comment.content)
@@ -18,13 +19,13 @@ def get_comments(db: Session, blog_id: int):
         .all()
     )
 
-    print(results)
     comments = [
         schemas.CommentResponse(user_name=user, created_at=created_at, content=content)
         for user, created_at, content in results
     ]
-    
+
     return comments
+
 
 def create_comment(db: Session, comment: schemas.Comment, token: str):
     decoded_token = get_current_user(token)
@@ -46,11 +47,12 @@ def create_comment(db: Session, comment: schemas.Comment, token: str):
         result = {
             "user_name": decoded_token["name"],
             "created_at": db_comment.created_at,
-            "content": db_comment.content
+            "content": db_comment.content,
         }
         return result
     else:
-        return {"msg":"blog not found"}
+        return {"msg": "blog not found"}
+
 
 def remove_comment(db: Session, comment_id: int):
     db_comment = (

@@ -1,26 +1,34 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
+from typing import Optional
 
 
 class BlogBase(BaseModel):
-    title: str
-    sub_title: str
-    content: str
-    image: str = ""
-    user_id: int
-    tags: str
+    title: str = Field(..., max_length=255)
+    sub_title: str = Field(..., max_length=255)
+    content: str = Field(..., min_length=1)
+    image: Optional[str] = Field(default="")
+    tags: Optional[str] = Field(default="")
 
 
-class BlogCreate(BaseModel):
-    title: str
-    sub_title: str
-    content: str
-    image: str = ""
-    tags: str
+class BlogCreate(BlogBase):
+    pass
 
 
 class BlogUpdate(BlogBase):
     id: int
+
+
+class BlogGet(BlogBase):
+    id: int
+    clap_count: int
+    comment_count: int
+    created_at: datetime
+    user_id: int
+    user_name: str
+    user_about: str
+    user_follower: int
+    is_following: bool
 
 
 class BlogStr(BaseModel):
@@ -34,8 +42,9 @@ class BlogStr(BaseModel):
 
 class Blog(BlogBase):
     id: int
+    user_id: int
     clap_count: int
     comment_count: int
 
     class Config:
-        orm_model = True
+        from_attributesl = True

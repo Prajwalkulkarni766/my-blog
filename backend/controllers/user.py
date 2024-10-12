@@ -63,7 +63,7 @@ def create_user(db: Session, user: schemas.User):
     return db_user
 
 
-def update_user(db: Session, user: schemas.BasicUserUpdate, token: str):
+def update_user(db: Session, user: schemas.UserUpdate, token: str):
     decoded_token = get_current_user(token)
     db_user = (
         db.query(models.User).filter(models.User.id == decoded_token["id"]).first()

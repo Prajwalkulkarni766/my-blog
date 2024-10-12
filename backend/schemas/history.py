@@ -1,28 +1,26 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
+from typing import Optional
 
 
-class HistoryBase(BaseModel):
+class HistoryDetails(BaseModel):
     user_id: int
     blog_id: int
-    blog_title: str
-    blog_sub_title: str
-    blog_tags: str
 
 
 class HistoryGet(BaseModel):
     id: int
     blog_title: str
-    blog_sub_title: str
+    blog_subtitle: str
     created_at: datetime
 
 
-class HistoryCreate(HistoryBase):
+class HistoryCreate(HistoryDetails):
     pass
 
 
-class History(HistoryBase):
+class History(HistoryDetails):
     id: int
 
     class Config:
-        orm_model = True
+        from_attributes = True

@@ -1,21 +1,77 @@
 from ..schemas import readlater as schemas
 from ..models import readlater as models
+from ..models.blog import Blog
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from ..utilities.token import get_current_user
 from sqlalchemy import and_
 
 
+# def get_read_later_from_db(db: Session, token: str, page: int, limit: int):
+#     decoded_token = get_current_user(token)
+#     offset = (page - 1) * limit
+#     read_laters = (
+#         db.query(models.ReadLater)
+#         .filter(models.ReadLater.user_id == decoded_token["id"])
+#         .offset(offset)
+#         .limit(limit)
+#         .all()
+#     )
+
+#     result = []
+
+#     for read_later in read_laters:
+#         blog = db.query(Blog).filter(Blog.id == read_later.blog_id).first()
+#         read_later_str = {}
+#         read_later_str["id"] = read_later.blog_id
+#         read_later_str["read_later_id"] = read_later.id
+#         read_later_str["title"] = blog.title
+#         read_later_str["sub_title"] = blog.sub_title
+#         read_later_str["clap_count"] = blog.clap_count
+#         read_later_str["comment_count"] = blog.comment_count
+#         read_later_str["created_at"] = blog.created_at
+#         result.append(read_later_str)
+
+#     return result
+
+
 def get_read_later_from_db(db: Session, token: str, page: int, limit: int):
     decoded_token = get_current_user(token)
     offset = (page - 1) * limit
-    return (
+
+    read_laters = (
         db.query(models.ReadLater)
+        .join(models.Blog)  # Join with Blog to fetch required fields
         .filter(models.ReadLater.user_id == decoded_token["id"])
         .offset(offset)
         .limit(limit)
+        .with_entities(
+            models.ReadLater.id.label("read_later_id"),
+            models.Blog.id.label("blog_id"),
+            models.Blog.title,
+            models.Blog.sub_title,
+            models.Blog.clap_count,
+            models.Blog.comment_count,
+            models.Blog.created_at,
+        )
         .all()
     )
+
+    # Convert the result to a list of dictionaries
+    result = [
+        {
+            "id": read_later.blog_id,
+            "read_later_id": read_later.read_later_id,
+            "title": read_later.title,
+            "sub_title": read_later.sub_title,
+            "clap_count": read_later.clap_count,
+            "comment_count": read_later.comment_count,
+            "created_at": read_later.created_at,
+        }
+        for read_later in read_laters
+    ]
+
+    return result
 
 
 def add_to_read_later(db: Session, read_later: schemas.ReadLaterCreate, token: str):

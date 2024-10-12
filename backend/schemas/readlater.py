@@ -16,4 +16,4 @@ class ReadLater(ReadLaterBase):
     created_at: datetime
 
     class Config:
-        orm_model = True
+        from_attributesl = True

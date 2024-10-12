@@ -7,6 +7,7 @@ from ..controllers.blog import (
     delete_blog,
     recommend_blog,
     get_blog,
+    follwing_blog,
 )
 from sqlalchemy.orm import Session
 from typing import List
@@ -15,20 +16,26 @@ from ..utilities.token import oauth2_scheme
 blog_router = APIRouter(prefix=f"/blogs", tags=["Blog"])
 
 
-# get blog
-@blog_router.get("/{blog_id}", response_model=schemas.Blog)
-def get_requested_blog(
-    blog_id: int, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
-):
-    return get_blog(db=db, blog_id=blog_id, token=token)
-
-
 # recommend blog
-@blog_router.get("", response_model=List[schemas.BlogStr])
+@blog_router.get("/recommend", response_model=List[schemas.BlogStr])
 def get_recommended_blogs(
     page: int = 1, limit: int = 10, db: Session = Depends(get_db)
 ):
     return recommend_blog(db=db, page=page, limit=limit)
+
+
+# follwing blog
+@blog_router.get("/following", response_model=List[schemas.BlogStr])
+def get_following_blogs(page: int = 1, limit: int = 10, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    return follwing_blog(db=db, page=page, limit=limit, token=token)
+
+
+# get blog
+@blog_router.get("/{blog_id}", response_model=schemas.BlogGet)
+def get_requested_blog(
+    blog_id: int, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
+):
+    return get_blog(db=db, blog_id=blog_id, token=token)
 
 
 # create blog

@@ -15,4 +15,4 @@ class Notification(NotificationBase):
     id: int
 
     class Config:
-        orm_model = True
+        from_attributesl = True

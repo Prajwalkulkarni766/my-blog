@@ -19,9 +19,9 @@ def get_all_users(db: Session = Depends(get_db), token: str = Depends(oauth2_sch
 
 
 # update user
-@user_router.patch("", response_model=schemas.BasicUserUpdate)
+@user_router.patch("", response_model=schemas.UserUpdate)
 def update_the_user(
-    user: schemas.BasicUserUpdate,
+    user: schemas.UserUpdate,
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
 ):

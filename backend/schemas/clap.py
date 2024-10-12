@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 
 class ClapBase(BaseModel):
@@ -8,10 +9,11 @@ class ClapBase(BaseModel):
 
 class ClapCreate(BaseModel):
     blog_id: int
+    user_id: Optional[int] = None
 
 
 class Clap(ClapBase):
     id: int
 
     class Config:
-        orm_model = True
+        from_attributesl = True

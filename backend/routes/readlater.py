@@ -14,7 +14,7 @@ from typing import List
 read_later_router = APIRouter(prefix=f"/read_later", tags=["Read Later"])
 
 
-@read_later_router.get("", response_model=List[schemas.ReadLater])
+@read_later_router.get("")
 def get_read_later(
     page: int = 1,
     limit: int = 10,
