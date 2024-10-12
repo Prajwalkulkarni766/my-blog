@@ -29,10 +29,12 @@ export default function SignupForm({ buttonTxt }) {
       password: "",
       confirmPassword: "",
       about: "",
+      confirm_password: "",
     },
     validationSchema: signupSchema,
     onSubmit: async (values) => {
       try {
+        values.confirm_password = values.confirmPassword;
         const response = await axiosInstance.post("/v1/auth/signup", values);
 
         // Successful signup

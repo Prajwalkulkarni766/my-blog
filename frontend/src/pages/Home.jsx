@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react";
 import CustomBadge from "../components/CustomBadge";
-import BlogPostCard from "../components/BlogPostCard";
 import BlogList from "../components/BlogList.jsx";
 import Navbar from "../components/Navbar";
 import { useSelector, useDispatch } from "react-redux";
 import {
   clearHistory,
   clearParticularHistory,
-  getBlogs,
+  getRecommendedBlogs,
   getHistory,
   changeTab,
+  getReadLaterBlogs,
+  getFollowingBlogs,
 } from "../utils/api.js";
 
 import History from "../components/History.jsx";
@@ -35,13 +36,13 @@ export default function Home() {
 
   useEffect(() => {
     if (currentTab === "foryou" && foryouBlogs.length <= 0) {
-      getBlogs(dispatch, "foryou", forYouPage);
+      getRecommendedBlogs(dispatch, "foryou", forYouPage);
     } else if (currentTab === "following" && followingBlogs.length <= 0) {
-      getBlogs(dispatch, "following", followingPage);
+      getFollowingBlogs(dispatch, "following", followingPage);
     } else if (currentTab === "trending" && trendingBlogs.length <= 0) {
-      getBlogs(dispatch, "trending", trendingPage);
+      getRecommendedBlogs(dispatch, "trending", trendingPage);
     } else if (currentTab === "readlater" && readlaterBlogs.length <= 0) {
-      getBlogs(dispatch, "readlater", readLaterPage);
+      getReadLaterBlogs(dispatch, "readlater", readLaterPage);
     }
     if (history.length <= 0) {
       getHistory(dispatch, historyPage);
@@ -93,7 +94,9 @@ export default function Home() {
               <BlogList
                 blogs={foryouBlogs}
                 title="For You"
-                loadMore={() => getBlogs(dispatch, "foryou", forYouPage)}
+                loadMore={() =>
+                  getRecommendedBlogs(dispatch, "foryou", forYouPage)
+                }
                 noContentMessage="Please do some activities so we can suggest you blogs"
               />
             )}
@@ -101,7 +104,9 @@ export default function Home() {
               <BlogList
                 blogs={followingBlogs}
                 title="Following"
-                loadMore={() => getBlogs(dispatch, "following", followingPage)}
+                loadMore={() =>
+                  getFollowingBlogs(dispatch, "following", followingPage)
+                }
                 noContentMessage="You are following no one"
               />
             )}
@@ -109,7 +114,9 @@ export default function Home() {
               <BlogList
                 blogs={trendingBlogs}
                 title="Trending"
-                loadMore={() => getBlogs(dispatch, "trending", trendingPage)}
+                loadMore={() =>
+                  getRecommendedBlogs(dispatch, "trending", trendingPage)
+                }
                 noContentMessage="There is no blog in trending"
               />
             )}
@@ -117,7 +124,9 @@ export default function Home() {
               <BlogList
                 blogs={readlaterBlogs}
                 title="Read Later"
-                loadMore={() => getBlogs(dispatch, "readlater", readLaterPage)}
+                loadMore={() =>
+                  getReadLaterBlogs(dispatch, "readlater", readLaterPage)
+                }
                 noContentMessage="You have no blogs saved for later"
               />
             )}

@@ -1,6 +1,6 @@
 const ToasTConfig = {
   position: "top-right",
-  autoClose: 2000,
+  autoClose: 1500,
   hideProgressBar: true,
   closeOnClick: true,
   pauseOnHover: true,

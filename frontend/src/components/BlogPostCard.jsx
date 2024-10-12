@@ -5,12 +5,7 @@ import like from "../assets/like.svg";
 import comment from "../assets/comment.svg";
 import readLater from "../assets/readLater.svg";
 import share from "../assets/share.svg";
-import {
-  handleClap,
-  handleComment,
-  handleReadLater,
-  handleShare,
-} from "../utils/api.js";
+import { handleClap, handleReadLater } from "../utils/api.js";
 import ShareModal from "./ShareModal.jsx";
 import CommentModal from "./CommentModal.jsx";
 

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import user from "../assets/user.webp";
-import BlogPostButtons from "../components/BlogPostButtons";
 import Navbar from "../components/Navbar";
 import BlogCard from "../components/BlogCard";
 import ButtonGroup from "../components/ButtonGroup";
@@ -10,35 +9,40 @@ import readLater from "../assets/readLater.svg";
 import share from "../assets/share.svg";
 import listen from "../assets/listen.svg";
 import stop from "../assets/stop.svg";
-import {
-  handleClap,
-  handleComment,
-  handleListen,
-  handleReadLater,
-  handleShare,
-} from "../utils/api.js";
+import { handleClap, handleReadLater, follow, unfollow } from "../utils/api.js";
 import { getBlog } from "../utils/api.js";
+import ShareModal from "../components/ShareModal.jsx";
+import CommentModal from "../components/CommentModal.jsx";
 
 export default function Blog() {
   const [isBlogListening, setIsBlogListening] = useState(false);
+  const [shareModalVisiable, setShareModalVisible] = useState(false);
+  const [commentModalVisible, setCommentModalVisible] = useState(false);
+
   const [blog, setBlog] = useState({
+    id: "",
     title: "",
     sub_title: "",
     content: "",
+    image: "",
     clap_count: 0,
     comment_count: 0,
+    created_at: "",
+    user_id: "",
+    user_name: "",
+    user_about: "",
+    user_follwer: 0,
+    is_following: false,
   });
 
   function readBlog() {
-    setIsBlogListening(true)
+    setIsBlogListening(true);
     const utterance = new SpeechSynthesisUtterance();
-    utterance.text = `${blog.content} 
-      Lorem ipsum dolor sit, amet consectetur adipisicing elit. Dolorum pariatur, excepturi sed ipsum dolores, ipsa vitae odio quidem rem quam quisquam eveniet laborum facere! Accusantium, eaque eum dolor illo tempora minima odit illum. Explicabo saepe numquam dolore dolores ipsam maiores ad ullam, iste, architecto, doloribus ipsum? Debitis quibusdam fugit aperiam ut omnis non nobis harum.`;
+    utterance.text = `${blog.content}`;
     speechSynthesis.speak(utterance);
     utterance.onend = () => {
       setIsBlogListening(false);
     };
-  
   }
 
   useEffect(() => {
@@ -57,7 +61,7 @@ export default function Blog() {
     {
       label: "Clap",
       icon: like,
-      onClick: handleClap,
+      onClick: () => handleClap(blog.id),
       tooltip: "Clap",
       position: "left",
       count: blog.clap_count,
@@ -65,7 +69,7 @@ export default function Blog() {
     {
       label: "Comment",
       icon: comment,
-      onClick: handleComment,
+      onClick: () => setCommentModalVisible(true),
       tooltip: "Comment",
       position: "left",
       count: blog.comment_count,
@@ -73,20 +77,20 @@ export default function Blog() {
     {
       label: "Read Later",
       icon: readLater,
-      onClick: handleReadLater,
+      onClick: () => handleReadLater(blog.id),
       tooltip: "Read Later",
       position: "right",
     },
     {
       label: "Share",
       icon: share,
-      onClick: handleShare,
+      onClick: () => setShareModalVisible(true),
       tooltip: "Share",
       position: "right",
     },
     {
       label: "Listen",
-      icon: isBlogListening ? stop :  listen,
+      icon: isBlogListening ? stop : listen,
       onClick: readBlog,
       tooltip: "Listen",
       position: "right",
@@ -111,19 +115,29 @@ export default function Blog() {
             className="user-photo img-fluid rounded-circle"
             style={{ height: "57px" }}
           />
-          <div className="d-flex flex-column">
-            <div className="d-flex gap-3">
-              <span className="user-name cursor-pointer">Radha</span>
-              <span className="follow-btn text-secondary cursor-pointer">
-                Follow
-              </span>
+          <div className="d-flex flex-column w-100">
+            <div className="d-flex w-100 align-items-center justify-content-between gap-3">
+              <span className="user-name cursor-pointer">{blog.user_name}</span>
+              {blog.is_following ? (
+                <button
+                  className="btn my-btn ms-0"
+                  onClick={() => unfollow(blog.user_id, setBlog)}
+                >
+                  Unfollow
+                </button>
+              ) : (
+                <button
+                  className="btn my-btn ms-0"
+                  onClick={() => follow(blog.user_id, setBlog)}
+                >
+                  Follow
+                </button>
+              )}
             </div>
             <div className="d-flex align-items-center">
-              <span className="time-required-to-read-blog text-secondary">
-                7 Min
+              <span className="blog-post-date text-secondary">
+                {blog.created_at}
               </span>
-              <span className="dot"></span>
-              <span className="blog-post-date text-secondary">01/01/2000</span>
             </div>
           </div>
         </div>
@@ -145,24 +159,33 @@ export default function Blog() {
             <div className="d-flex gap-3 mb-2 justify-content-center align-item-center">
               <div className="d-flex flex-column">
                 <span className="user-name cursor-pointer fs-3 fw-bold">
-                  Radha
+                  {blog.user_name}
                 </span>
                 <span className="time-required-to-read-blog text-secondary mb-2">
-                  43k Followers
+                  {blog.user_follwer} Followers
                 </span>
               </div>
-              <button
-                className=" follow-btn btn my-btn ms-auto"
-                style={{ height: "39px" }}
-              >
-                Follow
-              </button>
+              {blog.is_following ? (
+                <button
+                  className=" follow-btn btn my-btn ms-auto"
+                  style={{ height: "39px" }}
+                  onClick={() => unfollow(blog.user_id, setBlog)}
+                >
+                  Unfollow
+                </button>
+              ) : (
+                <button
+                  className=" follow-btn btn my-btn ms-auto"
+                  style={{ height: "39px" }}
+                  onClick={() => follow(blog.user_id, setBlog)}
+                >
+                  Follow
+                </button>
+              )}
             </div>
             <div className="d-flex flex-column">
               <span className="blog-post-date text-secondary">
-                Medicine, science, statistics. Associate Professor of Medicine
-                and Public Health at Yale. New book “How Medicine Works and When
-                it Doesn’t” available now.
+                {blog.user_about}
               </span>
             </div>
           </div>
@@ -204,6 +227,19 @@ export default function Blog() {
           </div>
         </div>
       </div>
+
+      {shareModalVisiable && (
+        <ShareModal
+          setShareModalVisible={setShareModalVisible}
+          blogId={blog.id}
+        />
+      )}
+      {commentModalVisible && (
+        <CommentModal
+          setCommentModalVisible={setCommentModalVisible}
+          blogId={blog.id}
+        />
+      )}
     </>
   );
 }

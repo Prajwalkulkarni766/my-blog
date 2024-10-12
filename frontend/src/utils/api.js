@@ -51,28 +51,23 @@ export const changeTab = (setCurrentTab, tabName) => {
 };
 
 // this function will fetch blogs i.e. for-you tab from server
-export const getBlogs = async (dispatch, currentTab, blogPage) => {
+export const getRecommendedBlogs = async (dispatch, currentTab, blogPage) => {
   try {
-    const response = await axiosInstance.get("/v1/blogs", {
+    const response = await axiosInstance.get("/v1/blogs/recommend", {
       params: {
         page: blogPage,
       },
     });
 
     if (response.status === 200) {
-      if (currentTab === "foryou") {
+      if (response.data.length > 0) {
         dispatch(setBlog({ tab: "foryou", blogs: response.data }));
         dispatch(setPage({ tab: "foryou", page: blogPage + 1 }));
-      } else if (currentTab === "following") {
-        dispatch(setBlog({ tab: "following", blogs: [] }));
-        dispatch(setPage({ tab: "following", page: blogPage + 1 }));
-      } else if (currentTab === "trending") {
-        dispatch(setBlog({ tab: "trending", blogs: [] }));
-        dispatch(setPage({ tab: "trending", page: blogPage + 1 }));
-      } else if (currentTab === "readlater") {
-        dispatch(setBlog({ tab: "readlater", blogs: [] }));
-        dispatch(setPage({ tab: "foryou", page: blogPage + 1 }));
-      }
+      } 
+      // else if (currentTab === "trending") {
+      //   dispatch(setBlog({ tab: "trending", blogs: [] }));
+      //   dispatch(setPage({ tab: "trending", page: blogPage + 1 }));
+      // }
     } else {
       throw new Error("Unexpected status code received");
     }
@@ -84,8 +79,53 @@ export const getBlogs = async (dispatch, currentTab, blogPage) => {
 };
 
 // this function will fetch blogs i.e. following
+export const getFollowingBlogs = async (dispatch, currentTab, blogPage) => {
+  try {
+    const response = await axiosInstance.get("/v1/blogs/following", {
+      params: {
+        page: blogPage,
+      },
+    });
+
+    if (response.status === 200) {
+      if (response.data.length > 0) {
+        dispatch(setBlog({ tab: "following", blogs: response.data }));
+        dispatch(setPage({ tab: "following", page: blogPage + 1 }));
+      }
+    } else {
+      throw new Error("Unexpected status code received");
+    }
+  } catch (error) {
+    console.log(error);
+    const errorMessage = error.response?.data?.message || "An error occurred.";
+    Toast.error(errorMessage);
+  }
+}
+
 // this function will fetch blogs i.e. trending
+export const getTrendingBlogs = async () => {}
+
 // this function will fetch blogs i.e. read-later
+export const getReadLaterBlogs = async (dispatch, currentTab, blogPage) => {
+  try {
+    const response = await axiosInstance.get("/v1/read_later", {
+      params: {
+        page: blogPage,
+      },
+    });
+
+    if (response.status === 200 && response.data.length > 0) {
+      dispatch(setBlog({ tab: "readlater", blogs: response.data }));
+      dispatch(setPage({ tab: "foryou", page: blogPage + 1 }));
+    } else {
+      throw new Error("Unexpected status code received");
+    }
+  } catch (error) {
+    console.log(error);
+    const errorMessage = error.response?.data?.message || "An error occurred.";
+    Toast.error(errorMessage);
+  }
+};
 
 // this function will fetch history of user from server
 export const getHistory = async (dispatch, historyPage) => {
@@ -96,7 +136,7 @@ export const getHistory = async (dispatch, historyPage) => {
       },
     });
 
-    if (response.status === 200) {
+    if (response.status === 200 && response.data.length > 0) {
       dispatch(setHistory(response.data));
       dispatch(setHistoryPage(historyPage + 1));
     } else {
@@ -173,12 +213,6 @@ export const handleComment = async (blogId, content) => {
 };
 
 // this function give a clap for blog
-export const handleShare = async (blogId) => {};
-
-// this function give a clap for blog
-export const handleListen = () => {};
-
-// this function give a clap for blog
 export const handleReadLater = async (blogId) => {
   try {
     const response = await axiosInstance.post("/v1/read_later", {
@@ -198,6 +232,7 @@ export const handleReadLater = async (blogId) => {
   }
 };
 
+// this function fetch comments according to blog
 export const getComments = async (blogId, setComments) => {
   try {
     const response = await axiosInstance.get(`/v1/comments/${blogId}`);
@@ -214,12 +249,61 @@ export const getComments = async (blogId, setComments) => {
   }
 };
 
+// get blog
 export const getBlog = async (blogId, setBlog) => {
   try {
     const response = await axiosInstance.get(`/v1/blogs/${blogId}`);
 
     if (response.status === 200) {
       setBlog(response.data);
+    } else {
+      throw new Error("Unexpected status code received");
+    }
+  } catch (error) {
+    console.error(error);
+    const errorMessage = error.response?.data?.message || "An error occurred.";
+    Toast.error(errorMessage);
+  }
+};
+
+// start following the writer
+export const follow = async (followed_user_id, setBlog) => {
+  try {
+    const response = await axiosInstance.post(`/v1/followers`, {
+      followed_id: followed_user_id,
+    });
+
+    if (response.status === 200) {
+      Toast.success("Successfully started following writer");
+      setBlog(prevBlog => ({
+        ...prevBlog,
+        is_following: !prevBlog.is_following,
+      }));
+    } else {
+      throw new Error("Unexpected status code received");
+    }
+  } catch (error) {
+    console.error(error);
+    const errorMessage = error.response?.data?.message || "An error occurred.";
+    Toast.error(errorMessage);
+  }
+};
+
+// unfollow the writer
+export const unfollow = async (followed_user_id, setBlog) => {
+  try {
+    const response = await axiosInstance.delete(`/v1/followers`,{
+      params:{
+        followed_id:followed_user_id
+      }
+    });
+
+    if (response.status === 200) {
+      Toast.success("Successfully unfollowed the writer");
+      setBlog(prevBlog => ({
+        ...prevBlog,
+        is_following: !prevBlog.is_following,
+      }));
     } else {
       throw new Error("Unexpected status code received");
     }
