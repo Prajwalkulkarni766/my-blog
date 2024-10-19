@@ -6,7 +6,7 @@ from ..utilities.token import get_current_user
 from sqlalchemy import and_
 
 
-def create_clap(db: Session, clap: schemas.Clap, token: str):
+def create_clap(db: Session, clap: schemas.ClapCreate, token: str):
     decoded_token = get_current_user(token)
     exisiting_clap = (
         db.query(models.Clap)

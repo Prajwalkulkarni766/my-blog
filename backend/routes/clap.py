@@ -10,7 +10,7 @@ clap_router = APIRouter(prefix="/claps", tags=["Claps"])
 
 
 # add clap
-@clap_router.post("", response_model=schemas.Clap)
+@clap_router.post("", response_model=schemas.ClapBase)
 def add_clap(
     clap: schemas.ClapCreate,
     token: str = Depends(oauth2_scheme),

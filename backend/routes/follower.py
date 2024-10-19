@@ -38,7 +38,9 @@ def generate_follower(
 
 # remove follower
 @follwer_router.delete("")
-def unfollow_someone(followed_id: int, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def unfollow_someone(
+    followed_id: int, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+):
     return unfollow(db=db, followed_id=followed_id, token=token)
 
 

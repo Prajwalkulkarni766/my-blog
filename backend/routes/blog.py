@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, UploadFile, Form
+from typing import Optional
 from ..schemas import blog as schemas
 from ..configs.db import get_db
 from ..controllers.blog import (
@@ -8,6 +9,7 @@ from ..controllers.blog import (
     recommend_blog,
     get_blog,
     follwing_blog,
+    trending_blog,
 )
 from sqlalchemy.orm import Session
 from typing import List
@@ -26,8 +28,22 @@ def get_recommended_blogs(
 
 # follwing blog
 @blog_router.get("/following", response_model=List[schemas.BlogStr])
-def get_following_blogs(page: int = 1, limit: int = 10, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def get_following_blogs(
+    page: int = 1,
+    limit: int = 10,
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+):
     return follwing_blog(db=db, page=page, limit=limit, token=token)
+
+
+@blog_router.get("/trending", response_model=List[schemas.BlogStr])
+def get_trending_blogs(
+    page: int = 1,
+    limit: int = 10,
+    db: Session = Depends(get_db),
+):
+    return trending_blog(db=db, page=page, limit=limit)
 
 
 # get blog
@@ -41,11 +57,21 @@ def get_requested_blog(
 # create blog
 @blog_router.post("", response_model=schemas.BlogCreate)
 def post_blog(
-    blog: schemas.BlogCreate,
+    title: str = Form(...),
+    sub_title: str = Form(...),
+    content: str = Form(...),
+    tags: Optional[str] = Form(None),
+    image: UploadFile = File(None),
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
 ):
-    return create_blog(db=db, blog=blog, token=token)
+    blog_data = schemas.BlogCreate(
+        title=title,
+        sub_title=sub_title,
+        content=content,
+        tags=tags
+    )
+    return create_blog(db=db, blog=blog_data, token=token, image=image)
 
 
 # update blog

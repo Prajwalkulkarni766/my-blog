@@ -29,3 +29,6 @@ Thumbs.db
 
 # Flask instance folder (if using instance folder)
 instance/
+
+static/*
+!static/.gitkeep

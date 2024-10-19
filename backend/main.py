@@ -3,6 +3,7 @@ from redis import Redis
 from rq import Queue
 import random
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from .routes.auth import auth_router
 from .routes.user import user_router
@@ -53,7 +54,7 @@ def root_location():
 def enqueue_task():
     task_queue.enqueue(print_number)
 
-
+app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(auth_router, prefix=version_1_prefix)
 app.include_router(
     user_router,

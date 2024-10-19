@@ -1,4 +1,5 @@
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, UploadFile
+from typing import Optional
 from ..models.user import User
 from ..models.follower import Follower
 from ..schemas import blog as schemas
@@ -7,6 +8,9 @@ from ..models.history import History
 from sqlalchemy.orm import Session
 from ..utilities.token import get_current_user
 from sqlalchemy import and_, select
+import os
+import shutil
+import uuid
 
 import numpy as np
 import pandas as pd
@@ -104,6 +108,7 @@ def recommend_blog(db: Session, page: int, limit: int, tags="programming"):
                 "id": blog.id,
                 "title": blog.title,
                 "sub_title": blog.sub_title,
+                "image": blog.image,
                 "tags": blog.tags,
                 "clap_count": blog.clap_count,
                 "comment_count": blog.comment_count,
@@ -138,6 +143,7 @@ def recommend_blog(db: Session, page: int, limit: int, tags="programming"):
                 "id": blog_df.iloc[blog_idx].id,
                 "title": blog_df.iloc[blog_idx].title,
                 "sub_title": blog_df.iloc[blog_idx].sub_title,
+                "image": blog_df.iloc[blog_idx].image,
                 "clap_count": blog_df.iloc[blog_idx].clap_count,
                 "comment_count": blog_df.iloc[blog_idx].comment_count,
                 "created_at": blog_df.iloc[blog_idx].created_at,
@@ -152,30 +158,49 @@ def follwing_blog(db: Session, token: str, page: int, limit: int):
     offset = (page - 1) * limit
 
     followed_user_ids = (
-    db.execute(
-        select(Follower.followed_id)
-        .where(Follower.follower_id == decoded_token["id"])
+        (
+            db.execute(
+                select(Follower.followed_id).where(
+                    Follower.follower_id == decoded_token["id"]
+                )
+            )
+        )
+        .scalars()
+        .all()
     )
-    ).scalars().all()
-    
+
     if not followed_user_ids:
         return []
-    
+
     blogs = (
-        db.execute(
-            select(models.Blog)
-            .where(models.Blog.user_id.in_(followed_user_ids))
-            .order_by(models.Blog.created_at.desc())
-            .offset(offset)
-            .limit(limit)
+        (
+            db.execute(
+                select(models.Blog)
+                .where(models.Blog.user_id.in_(followed_user_ids))
+                .order_by(models.Blog.created_at.desc())
+                .offset(offset)
+                .limit(limit)
+            )
         )
-    ).scalars().all()
-    
+        .scalars()
+        .all()
+    )
+
     return blogs
-    
 
 
-def create_blog(db: Session, blog: schemas.BlogBase, token: str):
+def trending_blog(db: Session, page: int, limit: int):
+    offset = (page - 1) * limit
+    return (
+        db.query(models.Blog)
+        .order_by(models.Blog.clap_count.desc(), models.Blog.created_at.desc())
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+
+
+def create_blog(db: Session, blog: schemas.BlogBase, token: str, image: Optional[UploadFile]):
     decoded_token = get_current_user(token)
     # cleaning the data and creating tags
     cleaned_blog_title = clean_text(blog.title)
@@ -183,12 +208,23 @@ def create_blog(db: Session, blog: schemas.BlogBase, token: str):
     cleaned_blog_title = remove_stopwords(cleaned_blog_title)
     cleaned_blog_sub_title = remove_stopwords(cleaned_blog_sub_title)
 
+    if image:
+        upload_folder = "static/"
+        os.makedirs(upload_folder, exist_ok=True)
+        random_filename = f"{uuid.uuid4()}_{image.filename}"
+        image_path = os.path.join(upload_folder, random_filename)
+        with open(image_path, "wb") as buffer:
+            shutil.copyfileobj(image.file, buffer)
+    else:
+        image_path = ""
+
     db_blog = models.Blog(
         title=blog.title,
         sub_title=blog.sub_title,
         content=blog.content,
         user_id=decoded_token["id"],
-        tags=cleaned_blog_title + " " + cleaned_blog_sub_title + " " + blog.tags,
+        tags=f"{cleaned_blog_title} {cleaned_blog_sub_title} {blog.tags}",
+        image=image_path
     )
     db.add(db_blog)
     db.commit()

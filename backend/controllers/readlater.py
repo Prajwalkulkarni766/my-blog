@@ -7,34 +7,6 @@ from ..utilities.token import get_current_user
 from sqlalchemy import and_
 
 
-# def get_read_later_from_db(db: Session, token: str, page: int, limit: int):
-#     decoded_token = get_current_user(token)
-#     offset = (page - 1) * limit
-#     read_laters = (
-#         db.query(models.ReadLater)
-#         .filter(models.ReadLater.user_id == decoded_token["id"])
-#         .offset(offset)
-#         .limit(limit)
-#         .all()
-#     )
-
-#     result = []
-
-#     for read_later in read_laters:
-#         blog = db.query(Blog).filter(Blog.id == read_later.blog_id).first()
-#         read_later_str = {}
-#         read_later_str["id"] = read_later.blog_id
-#         read_later_str["read_later_id"] = read_later.id
-#         read_later_str["title"] = blog.title
-#         read_later_str["sub_title"] = blog.sub_title
-#         read_later_str["clap_count"] = blog.clap_count
-#         read_later_str["comment_count"] = blog.comment_count
-#         read_later_str["created_at"] = blog.created_at
-#         result.append(read_later_str)
-
-#     return result
-
-
 def get_read_later_from_db(db: Session, token: str, page: int, limit: int):
     decoded_token = get_current_user(token)
     offset = (page - 1) * limit

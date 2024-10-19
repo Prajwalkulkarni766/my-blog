@@ -1,13 +1,13 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional
+from fastapi import UploadFile
 
 
 class BlogBase(BaseModel):
     title: str = Field(..., max_length=255)
     sub_title: str = Field(..., max_length=255)
     content: str = Field(..., min_length=1)
-    image: Optional[str] = Field(default="")
     tags: Optional[str] = Field(default="")
 
 
@@ -21,6 +21,7 @@ class BlogUpdate(BlogBase):
 
 class BlogGet(BlogBase):
     id: int
+    image: str
     clap_count: int
     comment_count: int
     created_at: datetime
@@ -33,6 +34,7 @@ class BlogGet(BlogBase):
 
 class BlogStr(BaseModel):
     id: int
+    image: str
     title: str
     sub_title: str
     clap_count: int

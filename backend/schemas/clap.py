@@ -9,7 +9,6 @@ class ClapBase(BaseModel):
 
 class ClapCreate(BaseModel):
     blog_id: int
-    user_id: Optional[int] = None
 
 
 class Clap(ClapBase):
