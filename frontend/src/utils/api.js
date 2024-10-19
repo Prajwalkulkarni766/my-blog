@@ -7,6 +7,7 @@ import {
   removeHistoryItem,
 } from "../redux/history.slice.js";
 import { setBlog, setPage } from "../redux/blog.slice.js";
+import draftToHtml from "draftjs-to-html";
 
 // this function will clear all history of user
 export const clearHistory = async (dispatch) => {
@@ -63,16 +64,11 @@ export const getRecommendedBlogs = async (dispatch, currentTab, blogPage) => {
       if (response.data.length > 0) {
         dispatch(setBlog({ tab: "foryou", blogs: response.data }));
         dispatch(setPage({ tab: "foryou", page: blogPage + 1 }));
-      } 
-      // else if (currentTab === "trending") {
-      //   dispatch(setBlog({ tab: "trending", blogs: [] }));
-      //   dispatch(setPage({ tab: "trending", page: blogPage + 1 }));
-      // }
+      }
     } else {
       throw new Error("Unexpected status code received");
     }
   } catch (error) {
-    console.log(error);
     const errorMessage = error.response?.data?.message || "An error occurred.";
     Toast.error(errorMessage);
   }
@@ -96,14 +92,33 @@ export const getFollowingBlogs = async (dispatch, currentTab, blogPage) => {
       throw new Error("Unexpected status code received");
     }
   } catch (error) {
-    console.log(error);
     const errorMessage = error.response?.data?.message || "An error occurred.";
     Toast.error(errorMessage);
   }
-}
+};
 
 // this function will fetch blogs i.e. trending
-export const getTrendingBlogs = async () => {}
+export const getTrendingBlogs = async (dispatch, currentTab, blogPage) => {
+  try {
+    const response = await axiosInstance.get("/v1/blogs/trending", {
+      params: {
+        page: blogPage,
+      },
+    });
+
+    if (response.status === 200) {
+      if (response.data.length > 0) {
+        dispatch(setBlog({ tab: "trending", blogs: response.data }));
+        dispatch(setPage({ tab: "trending", page: blogPage + 1 }));
+      }
+    } else {
+      throw new Error("Unexpected status code received");
+    }
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || "An error occurred.";
+    Toast.error(errorMessage);
+  }
+};
 
 // this function will fetch blogs i.e. read-later
 export const getReadLaterBlogs = async (dispatch, currentTab, blogPage) => {
@@ -121,7 +136,6 @@ export const getReadLaterBlogs = async (dispatch, currentTab, blogPage) => {
       throw new Error("Unexpected status code received");
     }
   } catch (error) {
-    console.log(error);
     const errorMessage = error.response?.data?.message || "An error occurred.";
     Toast.error(errorMessage);
   }
@@ -199,7 +213,6 @@ export const handleComment = async (blogId, content) => {
     });
 
     if (response.status === 200) {
-      // console.log(response.data);
       Toast.success("Comment added successfully");
       return response.data;
     } else {
@@ -220,7 +233,6 @@ export const handleReadLater = async (blogId) => {
     });
 
     if (response.status === 200) {
-      // console.log(response.data);
       Toast.success("Added to read later");
     } else {
       throw new Error("Unexpected status code received");
@@ -255,6 +267,8 @@ export const getBlog = async (blogId, setBlog) => {
     const response = await axiosInstance.get(`/v1/blogs/${blogId}`);
 
     if (response.status === 200) {
+      const rawContent = JSON.parse(response.data.content);
+      response.data.content = draftToHtml(rawContent);
       setBlog(response.data);
     } else {
       throw new Error("Unexpected status code received");
@@ -275,7 +289,7 @@ export const follow = async (followed_user_id, setBlog) => {
 
     if (response.status === 200) {
       Toast.success("Successfully started following writer");
-      setBlog(prevBlog => ({
+      setBlog((prevBlog) => ({
         ...prevBlog,
         is_following: !prevBlog.is_following,
       }));
@@ -292,15 +306,15 @@ export const follow = async (followed_user_id, setBlog) => {
 // unfollow the writer
 export const unfollow = async (followed_user_id, setBlog) => {
   try {
-    const response = await axiosInstance.delete(`/v1/followers`,{
-      params:{
-        followed_id:followed_user_id
-      }
+    const response = await axiosInstance.delete(`/v1/followers`, {
+      params: {
+        followed_id: followed_user_id,
+      },
     });
 
     if (response.status === 200) {
       Toast.success("Successfully unfollowed the writer");
-      setBlog(prevBlog => ({
+      setBlog((prevBlog) => ({
         ...prevBlog,
         is_following: !prevBlog.is_following,
       }));

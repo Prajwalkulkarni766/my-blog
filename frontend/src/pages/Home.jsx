@@ -11,6 +11,7 @@ import {
   changeTab,
   getReadLaterBlogs,
   getFollowingBlogs,
+  getTrendingBlogs,
 } from "../utils/api.js";
 
 import History from "../components/History.jsx";
@@ -40,7 +41,7 @@ export default function Home() {
     } else if (currentTab === "following" && followingBlogs.length <= 0) {
       getFollowingBlogs(dispatch, "following", followingPage);
     } else if (currentTab === "trending" && trendingBlogs.length <= 0) {
-      getRecommendedBlogs(dispatch, "trending", trendingPage);
+      getTrendingBlogs(dispatch, "trending", trendingPage);
     } else if (currentTab === "readlater" && readlaterBlogs.length <= 0) {
       getReadLaterBlogs(dispatch, "readlater", readLaterPage);
     }
@@ -115,7 +116,7 @@ export default function Home() {
                 blogs={trendingBlogs}
                 title="Trending"
                 loadMore={() =>
-                  getRecommendedBlogs(dispatch, "trending", trendingPage)
+                  getTrendingBlogs(dispatch, "trending", trendingPage)
                 }
                 noContentMessage="There is no blog in trending"
               />

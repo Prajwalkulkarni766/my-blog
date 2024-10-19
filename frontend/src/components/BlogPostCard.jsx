@@ -61,19 +61,21 @@ export default function BlogPostCard({
           className="row g-0 cursor-pointer text-decoration-none text-body"
           to={`/blog?id=${cardId}`}
         >
-          <div className="col-8">
-            <div className="card-body">
-              <h5 className="card-title">{cardTitle}</h5>
-              <p className="card-text">{cardText}</p>
-              <p className="card-text">
-                <small className="text-body-secondary">Posted {postDate}</small>
-              </p>
+          <div className="d-flex justify-content-end align-items-center mb-lg-2">
+            <div className="col-8">
+              <div className="card-body">
+                <h5 className="card-title">{cardTitle}</h5>
+                <p className="card-text">{cardText}</p>
+                <p className="card-text">
+                  <small className="text-body-secondary">Posted {postDate}</small>
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="col-4 d-flex justify-content-end align-items-center">
-            {cardImage && (
-              <img src={cardImage} className="img-fluid rounded" alt="abc" />
-            )}
+            <div className="col-4">
+              {cardImage && (
+                <img src={`http://localhost:8000/${cardImage}`} className="img-fluid rounded" alt="Blog image" style={{objectFit: "cover"}} />
+              )}
+            </div>
           </div>
         </NavLink>
         <div className="card-footer bg-transparent ">

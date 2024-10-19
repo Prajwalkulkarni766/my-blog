@@ -13,11 +13,14 @@ import { handleClap, handleReadLater, follow, unfollow } from "../utils/api.js";
 import { getBlog } from "../utils/api.js";
 import ShareModal from "../components/ShareModal.jsx";
 import CommentModal from "../components/CommentModal.jsx";
+import draftToHtml from "draftjs-to-html";
 
 export default function Blog() {
   const [isBlogListening, setIsBlogListening] = useState(false);
   const [shareModalVisiable, setShareModalVisible] = useState(false);
   const [commentModalVisible, setCommentModalVisible] = useState(false);
+  const [htmlContent, setHtmlContent] = useState(null);
+  // const  = draftToHtml(JSON.parse(rawContent));
 
   const [blog, setBlog] = useState({
     id: "",
@@ -43,6 +46,10 @@ export default function Blog() {
     utterance.onend = () => {
       setIsBlogListening(false);
     };
+  }
+
+  function stopReadingBlog() {
+    speechSynthesis.cancel();
   }
 
   useEffect(() => {
@@ -91,7 +98,7 @@ export default function Blog() {
     {
       label: "Listen",
       icon: isBlogListening ? stop : listen,
-      onClick: readBlog,
+      onClick: isBlogListening ? stopReadingBlog : readBlog,
       tooltip: "Listen",
       position: "right",
     },
@@ -149,14 +156,16 @@ export default function Blog() {
 
         <hr />
 
-        <div className="mt-4">{blog.content}</div>
+        {blog.image && <img src={`http://localhost:8000/${blog.image}`} className="img-fluid rounded" alt="Blog Image" />}
+
+        <div className="mt-4" dangerouslySetInnerHTML={{ __html: blog.content }} />
 
         <hr />
 
         {/* user profile card */}
         <div className="mt-4 mb-4">
           <div className="d-flex flex-column">
-            <div className="d-flex gap-3 mb-2 justify-content-center align-item-center">
+            <div className="d-flex gap-3 mb-2 justify-content-center align-items-center">
               <div className="d-flex flex-column">
                 <span className="user-name cursor-pointer fs-3 fw-bold">
                   {blog.user_name}

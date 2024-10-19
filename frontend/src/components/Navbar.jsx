@@ -26,6 +26,7 @@ export default function Navbar() {
   const logOut = () => {
     dispatch(setToken(null));
     localStorage.removeItem("access_token");
+    navigate("/");
   };
 
   return (

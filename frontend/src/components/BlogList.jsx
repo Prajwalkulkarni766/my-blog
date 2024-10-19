@@ -15,7 +15,7 @@ export default function BlogList({ blogs, title, loadMore, noContentMessage }) {
               cardId={blog.id}
               cardTitle={blog.title}
               cardText={blog.sub_title}
-              cardImage={blog.cardImage}
+              cardImage={blog.image}
               postDate={blog.created_at}
               clapCount={blog.clap_count}
               commentCount={blog.comment_count}
