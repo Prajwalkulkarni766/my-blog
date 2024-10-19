@@ -13,5 +13,13 @@ def get_notifications(db: Session, token: str):
     )
 
 
-def create_notification(db: Session):
-    pass
+def create_notification(db: Session, notification: schemas.NotificationCreate):
+    db_notification = models.Notification(
+        user_id=notification.user_id,
+        notification_title=notification.notification_title,
+        notification_body=notification.notification_body,
+    )
+    db.add(db_notification)
+    db.commit()
+    db.refresh(db_notification)
+    return 0

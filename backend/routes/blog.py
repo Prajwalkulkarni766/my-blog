@@ -66,10 +66,7 @@ def post_blog(
     db: Session = Depends(get_db),
 ):
     blog_data = schemas.BlogCreate(
-        title=title,
-        sub_title=sub_title,
-        content=content,
-        tags=tags
+        title=title, sub_title=sub_title, content=content, tags=tags
     )
     return create_blog(db=db, blog=blog_data, token=token, image=image)
 

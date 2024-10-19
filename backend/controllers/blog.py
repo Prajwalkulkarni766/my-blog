@@ -200,7 +200,9 @@ def trending_blog(db: Session, page: int, limit: int):
     )
 
 
-def create_blog(db: Session, blog: schemas.BlogBase, token: str, image: Optional[UploadFile]):
+def create_blog(
+    db: Session, blog: schemas.BlogBase, token: str, image: Optional[UploadFile]
+):
     decoded_token = get_current_user(token)
     # cleaning the data and creating tags
     cleaned_blog_title = clean_text(blog.title)
@@ -224,7 +226,7 @@ def create_blog(db: Session, blog: schemas.BlogBase, token: str, image: Optional
         content=blog.content,
         user_id=decoded_token["id"],
         tags=f"{cleaned_blog_title} {cleaned_blog_sub_title} {blog.tags}",
-        image=image_path
+        image=image_path,
     )
     db.add(db_blog)
     db.commit()
