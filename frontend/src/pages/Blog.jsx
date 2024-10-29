@@ -156,9 +156,18 @@ export default function Blog() {
 
         <hr />
 
-        {blog.image && <img src={`http://localhost:8000/${blog.image}`} className="img-fluid rounded" alt="Blog Image" />}
+        {blog.image && (
+          <img
+            src={`http://localhost:8000/${blog.image}`}
+            className="img-fluid rounded"
+            alt="Blog Image"
+          />
+        )}
 
-        <div className="mt-4" dangerouslySetInnerHTML={{ __html: blog.content }} />
+        <div
+          className="mt-4"
+          dangerouslySetInnerHTML={{ __html: blog.content }}
+        />
 
         <hr />
 

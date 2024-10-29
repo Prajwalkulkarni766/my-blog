@@ -10,7 +10,7 @@ import CustomTextArea from "../components/CustomTextArea";
 export default function BlogForm() {
   const [editorState, setEditorState] = useState(EditorState.createEmpty());
   const [image, setImage] = useState(null);
-  const [imageData, setImageData] = useState(null)
+  const [imageData, setImageData] = useState(null);
 
   const handleKeyCommand = (command) => {
     const newState = RichUtils.handleKeyCommand(editorState, command);
@@ -29,7 +29,7 @@ export default function BlogForm() {
     event.preventDefault();
     const file = event.target.files[0];
     if (file) {
-      setImageData(file)
+      setImageData(file);
       setImage(URL.createObjectURL(file));
     }
   };
@@ -66,7 +66,7 @@ export default function BlogForm() {
           formData.append("image", imageData);
         }
 
-        const response = await axiosInstance.post("/v1/blogs", formData,  {
+        const response = await axiosInstance.post("/v1/blogs", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },

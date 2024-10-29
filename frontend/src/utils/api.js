@@ -8,6 +8,7 @@ import {
 } from "../redux/history.slice.js";
 import { setBlog, setPage } from "../redux/blog.slice.js";
 import draftToHtml from "draftjs-to-html";
+import { setSearchBlogsPage } from "../redux/search.slice.js";
 
 // this function will clear all history of user
 export const clearHistory = async (dispatch) => {
@@ -129,9 +130,11 @@ export const getReadLaterBlogs = async (dispatch, currentTab, blogPage) => {
       },
     });
 
-    if (response.status === 200 && response.data.length > 0) {
-      dispatch(setBlog({ tab: "readlater", blogs: response.data }));
-      dispatch(setPage({ tab: "foryou", page: blogPage + 1 }));
+    if (response.status === 200) {
+      if (response.data.length > 0) {
+        dispatch(setBlog({ tab: "readlater", blogs: response.data }));
+        dispatch(setPage({ tab: "foryou", page: blogPage + 1 }));
+      }
     } else {
       throw new Error("Unexpected status code received");
     }
@@ -150,9 +153,11 @@ export const getHistory = async (dispatch, historyPage) => {
       },
     });
 
-    if (response.status === 200 && response.data.length > 0) {
-      dispatch(setHistory(response.data));
-      dispatch(setHistoryPage(historyPage + 1));
+    if (response.status === 200) {
+      if (response.data.length > 0) {
+        dispatch(setHistory(response.data));
+        dispatch(setHistoryPage(historyPage + 1));
+      }
     } else {
       throw new Error("Unexpected status code received");
     }
@@ -318,6 +323,35 @@ export const unfollow = async (followed_user_id, setBlog) => {
         ...prevBlog,
         is_following: !prevBlog.is_following,
       }));
+    } else {
+      throw new Error("Unexpected status code received");
+    }
+  } catch (error) {
+    console.error(error);
+    const errorMessage = error.response?.data?.message || "An error occurred.";
+    Toast.error(errorMessage);
+  }
+};
+
+export const searchBlog = async (searchPage, func, dispatch) => {
+  try {
+    const urlObj = new URL(window.location.href);
+    const searchTerm = urlObj.searchParams.get("searchTerm");
+    console.log(searchTerm);
+    const response = await axiosInstance.get(`/v1/blogs/search`, {
+      params: {
+        page: searchPage,
+        queryString: searchTerm,
+      },
+    });
+
+    if (response.status === 200) {
+      if (response.data.length > 0) {
+        dispatch(func(response.data));
+        dispatch(setSearchBlogsPage(searchPage + 1));
+      } else {
+        dispatch(func(response.data));
+      }
     } else {
       throw new Error("Unexpected status code received");
     }

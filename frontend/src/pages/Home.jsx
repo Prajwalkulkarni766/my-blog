@@ -13,7 +13,6 @@ import {
   getFollowingBlogs,
   getTrendingBlogs,
 } from "../utils/api.js";
-
 import History from "../components/History.jsx";
 
 export default function Home() {

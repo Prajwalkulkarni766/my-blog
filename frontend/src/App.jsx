@@ -14,6 +14,7 @@ import Notification from "./pages/Notification";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import About from "./pages/About";
+import Search from "./pages/Search";
 
 const router = createBrowserRouter([
   {
@@ -33,6 +34,14 @@ const router = createBrowserRouter([
     element: (
       <PrivateRoute>
         <Home />,
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "search",
+    element: (
+      <PrivateRoute>
+        <Search />,
       </PrivateRoute>
     ),
   },

@@ -3,6 +3,8 @@ import { NavLink } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { setToken } from "../redux/auth.slice";
+import { searchBlog } from "../utils/api";
+import { setSearchBlogs } from "../redux/search.slice";
 
 export default function Navbar() {
   const navMenus = [
@@ -20,7 +22,10 @@ export default function Navbar() {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    navigate(`/blog?searchTerm=${searchTerm}`);
+    if (searchTerm.trim()) {
+      navigate(`/search?searchTerm=${encodeURIComponent(searchTerm)}`);
+      searchBlog(1, setSearchBlogs, dispatch)
+    }
   };
 
   const logOut = () => {
@@ -48,13 +53,9 @@ export default function Navbar() {
         </button>
 
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
-          <form
-            className="d-flex me-auto mt-1"
-            role="search"
-            onSubmit={handleSubmit}
-          >
+          <div className="d-flex me-auto mt-1" role="search">
             {(tokenFromStore || tokenFromLocalStorage) && (
-              <div className="d-flex">
+              <form onSubmit={handleSubmit} className="d-flex">
                 <input
                   className="form-control me-2"
                   type="search"
@@ -66,9 +67,9 @@ export default function Navbar() {
                 <button className="btn my-btn" type="submit">
                   Search
                 </button>
-              </div>
+              </form>
             )}
-          </form>
+          </div>
 
           <ul className="navbar-nav d-flex mb-2 mb-lg-0 gap-2">
             {(tokenFromStore || tokenFromLocalStorage) && (

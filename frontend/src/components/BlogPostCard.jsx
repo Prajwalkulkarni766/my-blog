@@ -67,13 +67,20 @@ export default function BlogPostCard({
                 <h5 className="card-title">{cardTitle}</h5>
                 <p className="card-text">{cardText}</p>
                 <p className="card-text">
-                  <small className="text-body-secondary">Posted {postDate}</small>
+                  <small className="text-body-secondary">
+                    Posted {postDate}
+                  </small>
                 </p>
               </div>
             </div>
             <div className="col-4">
               {cardImage && (
-                <img src={`http://localhost:8000/${cardImage}`} className="img-fluid rounded" alt="Blog image" style={{objectFit: "cover"}} />
+                <img
+                  src={`http://localhost:8000/${cardImage}`}
+                  className="img-fluid rounded"
+                  alt="Blog image"
+                  style={{ objectFit: "cover" }}
+                />
               )}
             </div>
           </div>
