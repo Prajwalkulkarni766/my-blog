@@ -7,7 +7,7 @@ from ..models import blog as models
 from ..models.history import History
 from sqlalchemy.orm import Session
 from ..utilities.token import get_current_user
-from sqlalchemy import and_, select
+from sqlalchemy import and_, select, or_
 import os
 import shutil
 import uuid
@@ -198,6 +198,24 @@ def trending_blog(db: Session, page: int, limit: int):
         .limit(limit)
         .all()
     )
+
+
+def search_blogs(db: Session, queryString: str, page: int, limit: int):
+    offset = (page - 1) * limit
+    query = db.query(models.Blog)
+    
+    # Apply filters for title and tags
+    query = query.filter(
+        or_(
+            models.Blog.title.ilike(f"%{queryString}%"),
+            models.Blog.tags.ilike(f"%{queryString}%")
+        )
+    )
+    
+    # Apply pagination
+    query = query.offset(offset).limit(limit)
+    
+    return query.all()
 
 
 def create_blog(

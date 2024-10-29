@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, File, UploadFile, Form
+from fastapi import APIRouter, Depends, File, UploadFile, Form, Query
 from typing import Optional
 from ..schemas import blog as schemas
 from ..configs.db import get_db
@@ -10,6 +10,7 @@ from ..controllers.blog import (
     get_blog,
     follwing_blog,
     trending_blog,
+    search_blogs,
 )
 from sqlalchemy.orm import Session
 from typing import List
@@ -46,6 +47,18 @@ def get_trending_blogs(
     return trending_blog(db=db, page=page, limit=limit)
 
 
+# search blog
+@blog_router.get("/search", response_model=List[schemas.BlogStr])
+def search_blogs_route(
+    queryString: str,
+    page: int = 1,
+    limit: int = 10,
+    db: Session = Depends(get_db),
+):
+    results = search_blogs(db=db, queryString=queryString, page=page, limit=limit)
+    return results
+
+
 # get blog
 @blog_router.get("/{blog_id}", response_model=schemas.BlogGet)
 def get_requested_blog(
@@ -61,7 +74,7 @@ def post_blog(
     sub_title: str = Form(...),
     content: str = Form(...),
     tags: Optional[str] = Form(None),
-    image: UploadFile = File(None),
+    image: Optional[UploadFile] = File(None),
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
 ):
