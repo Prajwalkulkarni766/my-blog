@@ -1,26 +1,33 @@
-from pydantic import BaseModel, Field
+"""
+schemas/history.py
+
+This module defines the Pydantic models for history-related operations in the application. 
+It includes schemas for tracking user interactions with blogs, such as views and reads.
+"""
+
+
+from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
 
 
 class HistoryDetails(BaseModel):
-    user_id: int
-    blog_id: int
+  user_id: int
+  blog_id: int
 
 
 class HistoryGet(BaseModel):
-    id: int
-    blog_title: str
-    blog_subtitle: str
-    created_at: datetime
+  id: int
+  blog_title: str
+  blog_subtitle: str
+  created_at: datetime
 
 
 class HistoryCreate(HistoryDetails):
-    pass
+  pass
 
 
 class History(HistoryDetails):
-    id: int
+  id: int
 
-    class Config:
-        from_attributes = True
+  class Config:
+    from_attributes = True

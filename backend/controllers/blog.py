@@ -1,10 +1,24 @@
-from fastapi import Depends, HTTPException, UploadFile
+"""
+controllers/blog.py
+
+This module contains the business logic for managing blogs, including
+functions for retrieving, creating, updating, and deleting blog posts.
+It also includes functionality for recommending blogs and tracking user
+activity related to blogs.
+
+Dependencies:
+- FastAPI
+- SQLAlchemy
+- NLTK
+- scikit-learn
+- pandas
+- fuzzywuzzy
+- transformers
+"""
+
+
+from fastapi import HTTPException, UploadFile
 from typing import Optional
-from ..models.user import User
-from ..models.follower import Follower
-from ..schemas import blog as schemas
-from ..models import blog as models
-from ..models.history import History
 from sqlalchemy.orm import Session
 from ..utilities.token import get_current_user
 from sqlalchemy import and_, select, or_
@@ -12,263 +26,284 @@ import os
 import shutil
 import uuid
 
-import numpy as np
+
+# importing schema
+from ..schemas import blog as BlogSchema
+
+
+# import models
+from ..models.user import User as UserModel
+from ..models.follower import Follower as FollowerModel
+from ..models.blog import Blog as BlogModel
+from ..models.history import History as HistoryModel
+
+
+# Third-party imports
+# import numpy as np
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder
 import re
-import nltk
+# from fuzzywuzzy import process
+# from transformers import pipeline
+
+
+# nltk imports
+# import nltk
 from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-from nltk.stem import WordNetLemmatizer
+# from nltk.tokenize import word_tokenize
+# from nltk.stem import WordNetLemmatizer
+# from nltk.stem.porter import PorterStemmer
+
+
+# sklearn imports
+# from sklearn.preprocessing import LabelEncoder
 from sklearn.feature_extraction.text import CountVectorizer
-from nltk.stem.porter import PorterStemmer
 from sklearn.metrics.pairwise import cosine_similarity
-from fuzzywuzzy import process
-from transformers import pipeline
+
+
 
 stop_words = set(stopwords.words("english"))
 cv = CountVectorizer(max_features=5000, stop_words="english")
 
 
 def clean_text(text):
-    text = re.sub(r"[^a-zA-Z\s]", "", text)
-    text = text.lower()
-    return text
+  text = re.sub(r"[^a-zA-Z\s]", "", text)
+  text = text.lower()
+  return text
 
 
 def remove_stopwords(text):
-    words = text.split()
-    filtered_text = [word for word in words if word not in stop_words]
-    return " ".join(filtered_text)
+  words = text.split()
+  filtered_text = [word for word in words if word not in stop_words]
+  return " ".join(filtered_text)
 
 
 def get_blog(db: Session, blog_id: int, token: str):
-    decoded_token = get_current_user(token)
-    blog = db.query(models.Blog).filter(models.Blog.id == blog_id).first()
-    user = db.query(User).filter(User.id == blog.user_id).first()
-    following_status = (
-        db.query(Follower)
-        .filter(
-            and_(
-                Follower.follower_id == decoded_token["id"],
-                Follower.followed_id == blog.user_id,
-            )
-        )
-        .first()
+  decoded_token = get_current_user(token)
+  blog = db.query(BlogModel).filter(BlogModel.id == blog_id).first()
+  user = db.query(UserModel).filter(UserModel.id == blog.user_id).first()
+  following_status = (
+    db.query(FollowerModel)
+    .filter(
+      and_(
+        FollowerModel.follower_id == decoded_token["id"],
+        FollowerModel.followed_id == blog.user_id,
+      )
     )
+    .first()
+  )
 
-    if following_status:
-        following_status = True
-    else:
-        following_status = False
+  if following_status:
+    following_status = True
+  else:
+    following_status = False
 
-    if blog is None:
-        raise HTTPException(status_code=404, detail="Blog not found")
+  if blog is None:
+    raise HTTPException(status_code=404, detail="Blog not found")
 
-    try:
-        db_add_history = History(
-            blog_id=blog_id,
-            user_id=decoded_token["id"],
-        )
-        db.add(db_add_history)
-        db.commit()
-        db.refresh(db_add_history)
-    except Exception as e:
-        print("Error adding history: ", e)
-        db.rollback()
-        raise HTTPException(status_code=500, detail="Error adding history")
+  try:
+    db_add_history = HistoryModel(
+      blog_id=blog_id,
+      user_id=decoded_token["id"],
+    )
+    db.add(db_add_history)
+    db.commit()
+    db.refresh(db_add_history)
+  except Exception as e:
+    print("Error adding history: ", e)
+    db.rollback()
+    raise HTTPException(status_code=500, detail="Error adding history") from e
 
-    return {
-        "id": blog.id,
-        "title": blog.title,
-        "sub_title": blog.sub_title,
-        "content": blog.content,
-        "image": blog.image,
-        "clap_count": blog.clap_count,
-        "comment_count": blog.comment_count,
-        "created_at": blog.created_at,
-        "user_id": user.id,
-        "user_name": user.name,
-        "user_about": user.about,
-        "user_follower": 0,
-        "is_following": following_status,
-    }
+  return {
+    "id": blog.id,
+    "title": blog.title,
+    "sub_title": blog.sub_title,
+    "content": blog.content,
+    "image": blog.image,
+    "clap_count": blog.clap_count,
+    "comment_count": blog.comment_count,
+    "created_at": blog.created_at,
+    "user_id": user.id,
+    "user_name": user.name,
+    "user_about": user.about,
+    "user_follower": 0,
+    "is_following": following_status,
+  }
 
 
 def get_blogs(db: Session):
-    return db.query(models.Blog).all()
+  return db.query(BlogModel).all()
 
 
 def recommend_blog(db: Session, page: int, limit: int, tags="programming"):
-    # todo: remove tags from parameter and retrive tags based on user history
-    blogs = get_blogs(db=db)
-    blog_df = pd.DataFrame(
-        [
-            {
-                "id": blog.id,
-                "title": blog.title,
-                "sub_title": blog.sub_title,
-                "image": blog.image,
-                "tags": blog.tags,
-                "clap_count": blog.clap_count,
-                "comment_count": blog.comment_count,
-                "created_at": blog.created_at,
-            }
-            for blog in blogs
-        ]
+  # todo: remove tags from parameter and retrive tags based on user history
+  blogs = get_blogs(db=db)
+  blog_df = pd.DataFrame(
+    [
+      {
+        "id": blog.id,
+        "title": blog.title,
+        "sub_title": blog.sub_title,
+        "image": blog.image,
+        "tags": blog.tags,
+        "clap_count": blog.clap_count,
+        "comment_count": blog.comment_count,
+        "created_at": blog.created_at,
+      }
+      for blog in blogs
+    ]
+  )
+
+  # Check if there are any blogs with the specified tags
+  matching_blogs = blog_df[blog_df["tags"] == tags]
+
+  if matching_blogs.empty:
+    return []  # Return an empty list if no matching blogs are found
+
+  vectors = cv.fit_transform(blog_df["tags"]).toarray()
+  similarity = cosine_similarity(vectors)
+
+  blog_index = matching_blogs.index[0]
+  distances = similarity[blog_index]
+  blog_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])
+
+  start_idx = (page - 1) * limit
+  end_idx = start_idx + limit
+
+  recommended_blogs = []
+
+  for i in blog_list[start_idx:end_idx]:
+    blog_idx = i[0]
+    recommended_blogs.append(
+      {
+        "id": blog_df.iloc[blog_idx].id,
+        "title": blog_df.iloc[blog_idx].title,
+        "sub_title": blog_df.iloc[blog_idx].sub_title,
+        "image": blog_df.iloc[blog_idx].image,
+        "clap_count": blog_df.iloc[blog_idx].clap_count,
+        "comment_count": blog_df.iloc[blog_idx].comment_count,
+        "created_at": blog_df.iloc[blog_idx].created_at,
+      }
     )
 
-    # Check if there are any blogs with the specified tags
-    matching_blogs = blog_df[blog_df["tags"] == tags]
-
-    if matching_blogs.empty:
-        return []  # Return an empty list if no matching blogs are found
-
-    vectors = cv.fit_transform(blog_df["tags"]).toarray()
-    similarity = cosine_similarity(vectors)
-
-    blog_index = matching_blogs.index[0]
-    distances = similarity[blog_index]
-    blog_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])
-
-    start_idx = (page - 1) * limit
-    end_idx = start_idx + limit
-
-    recommended_blogs = []
-
-    for i in blog_list[start_idx:end_idx]:
-        blog_idx = i[0]
-        recommended_blogs.append(
-            {
-                "id": blog_df.iloc[blog_idx].id,
-                "title": blog_df.iloc[blog_idx].title,
-                "sub_title": blog_df.iloc[blog_idx].sub_title,
-                "image": blog_df.iloc[blog_idx].image,
-                "clap_count": blog_df.iloc[blog_idx].clap_count,
-                "comment_count": blog_df.iloc[blog_idx].comment_count,
-                "created_at": blog_df.iloc[blog_idx].created_at,
-            }
-        )
-
-    return recommended_blogs
+  return recommended_blogs
 
 
 def follwing_blog(db: Session, token: str, page: int, limit: int):
-    decoded_token = get_current_user(token)
-    offset = (page - 1) * limit
+  decoded_token = get_current_user(token)
+  offset = (page - 1) * limit
 
-    followed_user_ids = (
-        (
-            db.execute(
-                select(Follower.followed_id).where(
-                    Follower.follower_id == decoded_token["id"]
-                )
-            )
+  followed_user_ids = (
+    (
+      db.execute(
+        select(FollowerModel.followed_id).where(
+          FollowerModel.follower_id == decoded_token["id"]
         )
-        .scalars()
-        .all()
+      )
     )
+    .scalars()
+    .all()
+  )
 
-    if not followed_user_ids:
-        return []
+  if not followed_user_ids:
+    return []
 
-    blogs = (
-        (
-            db.execute(
-                select(models.Blog)
-                .where(models.Blog.user_id.in_(followed_user_ids))
-                .order_by(models.Blog.created_at.desc())
-                .offset(offset)
-                .limit(limit)
-            )
-        )
-        .scalars()
-        .all()
+  blogs = (
+    (
+      db.execute(
+        select(BlogModel)
+        .where(BlogModel.user_id.in_(followed_user_ids))
+        .order_by(BlogModel.created_at.desc())
+        .offset(offset)
+        .limit(limit)
+      )
     )
+    .scalars()
+    .all()
+  )
 
-    return blogs
+  return blogs
 
 
 def trending_blog(db: Session, page: int, limit: int):
-    offset = (page - 1) * limit
-    return (
-        db.query(models.Blog)
-        .order_by(models.Blog.clap_count.desc(), models.Blog.created_at.desc())
-        .offset(offset)
-        .limit(limit)
-        .all()
-    )
+  offset = (page - 1) * limit
+  return (
+    db.query(BlogModel)
+    .order_by(BlogModel.clap_count.desc(), BlogModel.created_at.desc())
+    .offset(offset)
+    .limit(limit)
+    .all()
+  )
 
 
-def search_blogs(db: Session, queryString: str, page: int, limit: int):
-    offset = (page - 1) * limit
-    query = db.query(models.Blog)
-    
-    # Apply filters for title and tags
-    query = query.filter(
-        or_(
-            models.Blog.title.ilike(f"%{queryString}%"),
-            models.Blog.tags.ilike(f"%{queryString}%")
-        )
+def search_blogs(db: Session, query_string: str, page: int, limit: int):
+  offset = (page - 1) * limit
+  query = db.query(BlogModel)
+
+  # Apply filters for title and tags
+  query = query.filter(
+    or_(
+      BlogModel.title.ilike(f"%{query_string}%"),
+      BlogModel.tags.ilike(f"%{query_string}%"),
     )
-    
-    # Apply pagination
-    query = query.offset(offset).limit(limit)
-    
-    return query.all()
+  )
+
+  # Apply pagination
+  query = query.offset(offset).limit(limit)
+
+  return query.all()
 
 
 def create_blog(
-    db: Session, blog: schemas.BlogBase, token: str, image: Optional[UploadFile]
+  db: Session, blog: BlogSchema.BlogBase, token: str, image: Optional[UploadFile]
 ):
-    decoded_token = get_current_user(token)
-    # cleaning the data and creating tags
-    cleaned_blog_title = clean_text(blog.title)
-    cleaned_blog_sub_title = clean_text(blog.sub_title)
-    cleaned_blog_title = remove_stopwords(cleaned_blog_title)
-    cleaned_blog_sub_title = remove_stopwords(cleaned_blog_sub_title)
+  decoded_token = get_current_user(token)
+  # cleaning the data and creating tags
+  cleaned_blog_title = clean_text(blog.title)
+  cleaned_blog_sub_title = clean_text(blog.sub_title)
+  cleaned_blog_title = remove_stopwords(cleaned_blog_title)
+  cleaned_blog_sub_title = remove_stopwords(cleaned_blog_sub_title)
 
-    if image:
-        upload_folder = "static/"
-        os.makedirs(upload_folder, exist_ok=True)
-        random_filename = f"{uuid.uuid4()}_{image.filename}"
-        image_path = os.path.join(upload_folder, random_filename)
-        with open(image_path, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
-    else:
-        image_path = ""
+  if image:
+    upload_folder = "static/"
+    os.makedirs(upload_folder, exist_ok=True)
+    random_filename = f"{uuid.uuid4()}_{image.filename}"
+    image_path = os.path.join(upload_folder, random_filename)
+    with open(image_path, "wb") as buffer:
+      shutil.copyfileobj(image.file, buffer)
+  else:
+    image_path = ""
 
-    db_blog = models.Blog(
-        title=blog.title,
-        sub_title=blog.sub_title,
-        content=blog.content,
-        user_id=decoded_token["id"],
-        tags=f"{cleaned_blog_title} {cleaned_blog_sub_title} {blog.tags}",
-        image=image_path,
-    )
-    db.add(db_blog)
-    db.commit()
-    db.refresh(db_blog)
-    return blog
+  db_blog = BlogModel(
+    title=blog.title,
+    sub_title=blog.sub_title,
+    content=blog.content,
+    user_id=decoded_token["id"],
+    tags=f"{cleaned_blog_title} {cleaned_blog_sub_title} {blog.tags}",
+    image=image_path,
+  )
+  db.add(db_blog)
+  db.commit()
+  db.refresh(db_blog)
+  return blog
 
 
-def update_blog(db: Session, blog_id: int, blog: schemas.Blog):
-    db_blog = db.query(models.Blog).filter(models.Blog.id == blog_id).first()
-    if db_blog is None:
-        return None
-    db_blog.title = blog.title
-    db_blog.sub_title = blog.sub_title
-    db_blog.content = blog.content
-    db_blog.image = blog.image
-    db.commit()
-    db.refresh(db_blog)
-    return db_blog
+def update_blog(db: Session, blog_id: int, blog: BlogSchema.Blog):
+  db_blog = db.query(BlogModel).filter(BlogModel.id == blog_id).first()
+  if db_blog is None:
+    return None
+  db_blog.title = blog.title
+  db_blog.sub_title = blog.sub_title
+  db_blog.content = blog.content
+  db_blog.image = blog.image
+  db.commit()
+  db.refresh(db_blog)
+  return db_blog
 
 
 def delete_blog(db: Session, blog_id: int):
-    db_blog = db.query(models.Blog).filter(models.Blog.id == blog_id).first()
-    if db_blog is None:
-        return None
-    db.delete(db_blog)
-    db.commit()
-    return {"msg": "Blog deleted successfully"}
+  db_blog = db.query(BlogModel).filter(BlogModel.id == blog_id).first()
+  if db_blog is None:
+    return None
+  db.delete(db_blog)
+  db.commit()
+  return {"msg": "Blog deleted successfully"}
