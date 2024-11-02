@@ -1,18 +1,23 @@
 import React, { useEffect, useState } from "react";
-import user from "../assets/user.webp";
-import Navbar from "../components/Navbar";
-import BlogCard from "../components/BlogCard";
-import ButtonGroup from "../components/ButtonGroup";
-import like from "../assets/like.svg";
-import comment from "../assets/comment.svg";
-import readLater from "../assets/readLater.svg";
-import share from "../assets/share.svg";
-import listen from "../assets/listen.svg";
-import stop from "../assets/stop.svg";
-import { handleClap, handleReadLater, follow, unfollow } from "../utils/api.js";
-import { getBlog } from "../utils/api.js";
-import ShareModal from "../components/ShareModal.jsx";
-import CommentModal from "../components/CommentModal.jsx";
+import user from "../../assets/user.webp";
+import Navbar from "../../components/user/Navbar.jsx";
+import BlogCard from "../../components/user/BlogCard.jsx";
+import ButtonGroup from "../../components/user/ButtonGroup.jsx";
+import like from "../../assets/like.svg";
+import comment from "../../assets/comment.svg";
+import readLater from "../../assets/readLater.svg";
+import share from "../../assets/share.svg";
+import listen from "../../assets/listen.svg";
+import stop from "../../assets/stop.svg";
+import {
+  handleClap,
+  handleReadLater,
+  follow,
+  unfollow,
+} from "../../utils/api.js";
+import { getBlog } from "../../utils/api.js";
+import ShareModal from "../../components/user/ShareModal.jsx";
+import CommentModal from "../../components/user/CommentModal.jsx";
 import draftToHtml from "draftjs-to-html";
 
 export default function Blog() {
@@ -39,9 +44,10 @@ export default function Blog() {
   });
 
   function readBlog() {
+    const content = document.getElementById("blog_content").innerText;
     setIsBlogListening(true);
     const utterance = new SpeechSynthesisUtterance();
-    utterance.text = `${blog.content}`;
+    utterance.text = `${content}`;
     speechSynthesis.speak(utterance);
     utterance.onend = () => {
       setIsBlogListening(false);
@@ -167,6 +173,7 @@ export default function Blog() {
         <div
           className="mt-4"
           dangerouslySetInnerHTML={{ __html: blog.content }}
+          id="blog_content"
         />
 
         <hr />

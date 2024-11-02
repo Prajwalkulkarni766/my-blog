@@ -5,7 +5,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import Toast from "../helper/Toast";
 import axiosInstance from "../axios/axiosInstance";
-import CustomTextArea from "../components/CustomTextArea";
+import CustomTextArea from "../components/user/CustomTextArea";
 
 export default function BlogForm() {
   const [editorState, setEditorState] = useState(EditorState.createEmpty());
@@ -62,7 +62,7 @@ export default function BlogForm() {
         formData.append("sub_title", values.sub_title);
         formData.append("content", values.content);
         formData.append("tags", values.tags);
-        if (setImage) {
+        if (imageData) {
           formData.append("image", imageData);
         }
 
@@ -73,8 +73,11 @@ export default function BlogForm() {
         });
 
         if (response.status === 200) {
-          console.log(response.data);
           Toast.success("Blog posted successfully");
+          formik.resetForm();
+          setEditorState(EditorState.createEmpty());
+          setImage(null);
+          setImageData(null);
         } else {
           throw new Error("Unexpected status code received");
         }

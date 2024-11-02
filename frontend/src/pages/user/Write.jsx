@@ -1,6 +1,6 @@
 import React from "react";
-import Navbar from "../components/Navbar";
-import BlogForm from "../forms/BlogForm";
+import Navbar from "../../components/user/Navbar";
+import BlogForm from "../../forms/BlogForm";
 
 export default function Write() {
   return (

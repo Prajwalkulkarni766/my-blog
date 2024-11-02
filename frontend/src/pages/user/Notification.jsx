@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import Navbar from "../components/Navbar";
-import Notification from "../components/Notification";
-import Toast from "../helper/Toast";
-import axiosInstance from "../axios/axiosInstance";
+import Navbar from "../../components/user/Navbar";
+import Notification from "../../components/user/Notification";
+import Toast from "../../helper/Toast";
+import axiosInstance from "../../axios/axiosInstance";
 
 const NotificationPage = () => {
   const [notifications, setNotifications] = useState([]);

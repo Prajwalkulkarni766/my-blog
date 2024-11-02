@@ -4,17 +4,20 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Loading from "./components/Loading";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Home from "./pages/Home";
-import Blog from "./pages/Blog";
-import Write from "./pages/Write";
-import Navbar from "./components/Navbar";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import Notification from "./pages/Notification";
+import Home from "./pages/user/Home";
+import Blog from "./pages/user/Blog";
+import Write from "./pages/user/Write";
+import Login from "./pages/user/Login";
+import Signup from "./pages/user/Signup";
+import Notification from "./pages/user/Notification";
 import NotFound from "./pages/NotFound";
-import Profile from "./pages/Profile";
-import About from "./pages/About";
-import Search from "./pages/Search";
+import Profile from "./pages/user/Profile";
+import About from "./pages/user/About";
+import Search from "./pages/user/Search";
+import Admin from "./pages/admin/Admin";
+import UserReport from "./pages/admin/UserReport";
+import BlogReport from "./pages/admin/BlogReport";
+import OtherReport from "./pages/admin/OtherReport";
 
 const router = createBrowserRouter([
   {
@@ -74,6 +77,22 @@ const router = createBrowserRouter([
     ),
   },
   {
+    path: "admin",
+    element: <Admin />,
+  },
+  {
+    path: "admin/user-reports",
+    element: <UserReport />,
+  },
+  {
+    path: "admin/blog-reports",
+    element: <BlogReport />,
+  },
+  {
+    path: "admin/other-reports",
+    element: <OtherReport />,
+  },
+  {
     path: "*",
     element: <NotFound />,
   },
@@ -82,7 +101,6 @@ const router = createBrowserRouter([
 export default function App() {
   return (
     <>
-      {/* <Navbar /> */}
       <RouterProvider router={router} />
       <ToastContainer />
       <Loading />

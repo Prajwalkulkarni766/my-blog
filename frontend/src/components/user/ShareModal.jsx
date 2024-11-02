@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Button from "./Button";
-import copy from "../assets/copy.svg";
+import copy from "../../assets/copy.svg";
 import {
   FaWhatsapp,
   FaTwitter,

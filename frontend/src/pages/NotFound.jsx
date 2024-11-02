@@ -1,10 +1,12 @@
 import React from "react";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/user/Navbar";
+import AdminNavbar from "../components/admin/AdminNavbar";
 
 export default function NotFound() {
+  const isAdmin = window.location.href.includes("admin");
   return (
     <>
-      <Navbar />
+      {isAdmin ? <AdminNavbar /> : <Navbar />}
       <div className="container my-container mt-5">
         <div className="text-center">
           <h1>404</h1>

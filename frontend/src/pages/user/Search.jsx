@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
-import BlogList from "../components/BlogList.jsx";
-import Navbar from "../components/Navbar";
+import BlogList from "../../components/user/BlogList.jsx";
+import Navbar from "../../components/user/Navbar.jsx";
 import { useSelector, useDispatch } from "react-redux";
-import { searchBlog } from "../utils/api.js";
-import { setSearchBlogs, appendSearchBlogs } from "../redux/search.slice.js";
+import { searchBlog } from "../../utils/api.js";
+import { setSearchBlogs, appendSearchBlogs } from "../../redux/search.slice.js";
 
 export default function Search() {
   const dispatch = useDispatch();

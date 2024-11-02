@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import ButtonGroup from "./ButtonGroup";
+import ButtonGroup from "./ButtonGroup.jsx";
 import { NavLink } from "react-router-dom";
-import like from "../assets/like.svg";
-import comment from "../assets/comment.svg";
-import readLater from "../assets/readLater.svg";
-import share from "../assets/share.svg";
-import { handleClap, handleReadLater } from "../utils/api.js";
+import like from "../../assets/like.svg";
+import comment from "../../assets/comment.svg";
+import readLater from "../../assets/readLater.svg";
+import share from "../../assets/share.svg";
+import { handleClap, handleReadLater } from "../../utils/api.js";
 import ShareModal from "./ShareModal.jsx";
 import CommentModal from "./CommentModal.jsx";
 

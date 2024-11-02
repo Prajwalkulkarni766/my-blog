@@ -1,7 +1,7 @@
 import React from "react";
-import Navbar from "../components/Navbar";
+import Navbar from "../../components/user/Navbar";
 import { NavLink } from "react-router-dom";
-import LoginForm from "../forms/LoginForm";
+import LoginForm from "../../forms/LoginForm";
 
 export default function Login() {
   return (

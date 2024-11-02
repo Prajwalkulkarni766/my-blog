@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import CommentCard from "./CommentCard";
-import { getComments, handleComment } from "../utils/api";
+import { getComments, handleComment } from "../../utils/api";
 
 export default function CommentModal({ setCommentModalVisible, blogId }) {
   const [commentContent, setCommentContent] = useState(null);

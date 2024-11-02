@@ -1,5 +1,5 @@
 import React from "react";
-import profile_photo from "../assets/profile_photo.jpg";
+import profile_photo from "../../assets/profile_photo.jpg";
 
 export default function BlogCard({ title, subtitle, author }) {
   const truncateText = (text, maxLength) => {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import CustomBadge from "../components/CustomBadge";
-import BlogList from "../components/BlogList.jsx";
-import Navbar from "../components/Navbar";
+import CustomBadge from "../../components/user/CustomBadge.jsx";
+import BlogList from "../../components/user/BlogList.jsx";
+import Navbar from "../../components/user/Navbar.jsx";
 import { useSelector, useDispatch } from "react-redux";
 import {
   clearHistory,
@@ -12,8 +12,8 @@ import {
   getReadLaterBlogs,
   getFollowingBlogs,
   getTrendingBlogs,
-} from "../utils/api.js";
-import History from "../components/History.jsx";
+} from "../../utils/api.js";
+import History from "../../components/user/History.jsx";
 
 export default function Home() {
   // states that holds history and blogs info

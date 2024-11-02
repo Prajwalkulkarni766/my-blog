@@ -1,6 +1,6 @@
 import React from "react";
-import SignupForm from "../forms/SignupForm";
-import Navbar from "../components/Navbar";
+import SignupForm from "../../forms/SignupForm";
+import Navbar from "../../components/user/Navbar";
 import { NavLink } from "react-router-dom";
 
 export default function Signup() {

@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { setToken } from "../redux/auth.slice";
-import { searchBlog } from "../utils/api";
-import { setSearchBlogs } from "../redux/search.slice";
+import { setToken } from "../../redux/auth.slice";
+import { searchBlog } from "../../utils/api";
+import { setSearchBlogs } from "../../redux/search.slice";
 
 export default function Navbar() {
   const navMenus = [
@@ -24,7 +24,7 @@ export default function Navbar() {
     event.preventDefault();
     if (searchTerm.trim()) {
       navigate(`/search?searchTerm=${encodeURIComponent(searchTerm)}`);
-      searchBlog(1, setSearchBlogs, dispatch)
+      searchBlog(1, setSearchBlogs, dispatch);
     }
   };
 
