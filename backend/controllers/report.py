@@ -40,22 +40,22 @@ def get_clap_comment_count_last_5_days(db: Session):
   # Query for claps in the last 5 days
   clap_counts = (
     db.query(
-      func.date(ClapModel.Clap.created_at).label("activity_date"),
-      func.count(ClapModel.Clap.id).label("clap_count"),
+      func.date(ClapModel.created_at).label("activity_date"),
+      func.count(ClapModel.id).label("clap_count"),
     )
-    .filter(func.date(ClapModel.Clap.created_at) >= last_5_days[-1])
-    .group_by(func.date(ClapModel.Clap.created_at))
+    .filter(func.date(ClapModel.created_at) >= last_5_days[-1])
+    .group_by(func.date(ClapModel.created_at))
     .all()
   )
 
   # Query for comments in the last 5 days
   comment_counts = (
     db.query(
-      func.date(CommentModel.Comment.created_at).label("activity_date"),
-      func.count(CommentModel.Comment.id).label("comment_count"),
+      func.date(CommentModel.created_at).label("activity_date"),
+      func.count(CommentModel.id).label("comment_count"),
     )
-    .filter(func.date(CommentModel.Comment.created_at) >= last_5_days[-1])
-    .group_by(func.date(CommentModel.Comment.created_at))
+    .filter(func.date(CommentModel.created_at) >= last_5_days[-1])
+    .group_by(func.date(CommentModel.created_at))
     .all()
   )
 
@@ -87,112 +87,153 @@ def daily_registrations(db: Session):
   for i in range(4, -1, -1):  # 4,3,2,1,0 to get last 5 days
     date = current_date - timedelta(days=i)
     days_list.append(
-      {"date": date.strftime("%Y-%m-%d"), "new_users": 0}  # default value
+      {
+        "date": date.strftime("%Y-%m-%d"),
+        "label": date.strftime("%Y-%m-%d"),
+        "dataset": 0
+      }
     )
 
   # Get actual registration data
   result = (
     db.query(
-      func.date(UserModel.User.created_at).label("date"),
-      func.count(UserModel.User.id).label("new_users"),
+      func.date(UserModel.created_at).label("date"),
+      func.count(UserModel.id).label("new_users"),
     )
     .filter(
-      func.date(UserModel.User.created_at) >= (current_date - timedelta(days=4))
+      func.date(UserModel.created_at) >= (current_date - timedelta(days=4))
     )
-    .group_by(func.date(UserModel.User.created_at))
-    .order_by("date")
+    .group_by(func.date(UserModel.created_at))
+    .order_by(func.date(UserModel.created_at))
     .all()
   )
 
   # Update days_list with actual data where available
   for row in result:
-    for day_data in days_list:
-      if day_data["date"] == row[0].strftime("%Y-%m-%d"):
-        day_data["new_users"] = row[1]
+        date_str = row[0].strftime("%Y-%m-%d")
+        for day_data in days_list:
+            if day_data["date"] == date_str:
+                day_data["dataset"] = row[1]
 
   return days_list
 
 
 def weekly_registrations(db: Session):
-  current_date = datetime.now().date()
+    current_date = datetime.now().date()
 
-  # Create list of last 5 weeks (including current week)
-  weeks_list = []
-  for i in range(4, -1, -1):  # 4,3,2,1,0 to get last 5 weeks
-    date = current_date - timedelta(weeks=i)
-    iso_calendar = date.isocalendar()
-    weeks_list.append(
-      {
-        "year": iso_calendar.year,
-        "week": iso_calendar.week,
-        "new_users": 0,  # default value
-      }
+    # Create list of last 5 weeks (including current week)
+    weeks_list = []
+    for i in range(4, -1, -1):  # 4,3,2,1,0 to get last 5 weeks
+        date = current_date - timedelta(weeks=i)
+        iso_calendar = date.isocalendar()
+        weeks_list.append(
+            {
+                "label": f"Week {iso_calendar.week} ({iso_calendar.year})",  # Label as "Week X (Year)"
+                "dataset": 0  # default value
+            }
+        )
+
+    # Get actual registration data grouped by year and week
+    result = (
+        db.query(
+            func.extract("year", UserModel.created_at).label("year"),
+            func.extract("week", UserModel.created_at).label("week"),
+            func.count(UserModel.id).label("dataset"),
+        )
+        .filter(UserModel.created_at >= (current_date - timedelta(weeks=4)))
+        .group_by(
+            func.extract("year", UserModel.created_at),
+            func.extract("week", UserModel.created_at),
+        )
+        .order_by("year", "week")
+        .all()
     )
 
-  # Get actual registration data grouped by year and week
-  result = (
-    db.query(
-      func.extract("year", UserModel.User.created_at).label("year"),
-      func.extract("week", UserModel.User.created_at).label("week"),
-      func.count(UserModel.User.id).label("new_users"),
-    )
-    .filter(UserModel.User.created_at >= (current_date - timedelta(weeks=4)))
-    .group_by(
-      func.extract("year", UserModel.User.created_at),
-      func.extract("week", UserModel.User.created_at),
-    )
-    .order_by("year", "week")
-    .all()
-  )
+    # Update weeks_list with actual data where available
+    for row in result:
+        for week_data in weeks_list:
+            if week_data["label"] == f"Week {row[1]} ({int(row[0])})":
+                week_data["dataset"] = row[2]
 
-  # Update weeks_list with actual data where available
-  for row in result:
-    for week_data in weeks_list:
-      if week_data["year"] == row[0] and week_data["week"] == row[1]:
-        week_data["new_users"] = row[2]
+    return weeks_list
 
-  return weeks_list
 
+# def monthly_registrations(db: Session):
+#   current_date = datetime.now()
+
+#   # Create a list of last 5 months (including current)
+#   months_list = []
+#   for i in range(4, -1, -1):
+#     date = current_date - relativedelta(months=i)
+#     months_list.append(
+#       {
+#         "year": date.year,
+#         "month": date.month,
+#         "month_name": month_name[date.month],
+#         "new_users": 0,
+#       }
+#     )
+
+#   # Get actual registration data
+#   result = (
+#     db.query(
+#       func.year(UserModel.created_at).label("year"),
+#       func.month(UserModel.created_at).label("month"),
+#       func.count(UserModel.id).label("new_users"),
+#     )
+#     .filter(UserModel.created_at >= (current_date - relativedelta(months=4)))
+#     .group_by(
+#       func.year(UserModel.created_at), func.month(UserModel.created_at)
+#     )
+#     .order_by("year", "month")
+#     .all()
+#   )
+
+#   # Update months_list with actual data where available
+#   for row in result:
+#     for month_data in months_list:
+#       if month_data["year"] == row[0] and month_data["month"] == row[1]:
+#         month_data["new_users"] = row[2]
+
+#   return months_list
 
 def monthly_registrations(db: Session):
-  current_date = datetime.now()
+    current_date = datetime.now()
 
-  # Create a list of last 5 months (including current)
-  months_list = []
-  for i in range(4, -1, -1):
-    date = current_date - relativedelta(months=i)
-    months_list.append(
-      {
-        "year": date.year,
-        "month": date.month,
-        "month_name": month_name[date.month],
-        "new_users": 0,
-      }
+    # Create a list of last 5 months (including current)
+    months_list = []
+    for i in range(4, -1, -1):
+        date = current_date - relativedelta(months=i)
+        months_list.append(
+            {
+                "label": f"{month_name[date.month]} {date.year}",  # Month name and year as label
+                "dataset": 0,  # Default value for new_users
+            }
+        )
+
+    # Get actual registration data
+    result = (
+        db.query(
+            func.year(UserModel.created_at).label("year"),
+            func.month(UserModel.created_at).label("month"),
+            func.count(UserModel.id).label("dataset"),
+        )
+        .filter(UserModel.created_at >= (current_date - relativedelta(months=4)))
+        .group_by(
+            func.year(UserModel.created_at),
+            func.month(UserModel.created_at),
+        )
+        .order_by("year", "month")
+        .all()
     )
 
-  # Get actual registration data
-  result = (
-    db.query(
-      func.year(UserModel.User.created_at).label("year"),
-      func.month(UserModel.User.created_at).label("month"),
-      func.count(UserModel.User.id).label("new_users"),
-    )
-    .filter(UserModel.User.created_at >= (current_date - relativedelta(months=4)))
-    .group_by(
-      func.year(UserModel.User.created_at), func.month(UserModel.User.created_at)
-    )
-    .order_by("year", "month")
-    .all()
-  )
+    # Update months_list with actual data where available
+    for row in result:
+        for month_data in months_list:
+            if month_data["label"] == f"{month_name[int(row[1])]} {int(row[0])}":
+                month_data["dataset"] = row[2]
 
-  # Update months_list with actual data where available
-  for row in result:
-    for month_data in months_list:
-      if month_data["year"] == row[0] and month_data["month"] == row[1]:
-        month_data["new_users"] = row[2]
-
-  return months_list
-
+    return months_list
 
 def get_top_blogs(db: Session):
 

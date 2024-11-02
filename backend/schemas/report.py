@@ -11,20 +11,18 @@ from datetime import date
 
 
 class MonthlyRegistration(BaseModel):
-  year: int
-  month: int
-  new_users: int
+  label: str
+  dataset: int
 
 
 class DailyRegistration(BaseModel):
-  date: str
-  new_users: int
+  label: str
+  dataset: int
 
 
 class WeeklyRegistration(BaseModel):
-  year: int
-  week: int
-  new_users: int
+  label: str
+  dataset: int
 
 
 class ClapCommentCount(BaseModel):

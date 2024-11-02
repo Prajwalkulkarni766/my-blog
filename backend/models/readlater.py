@@ -11,8 +11,8 @@ when each entry was created.
 from sqlalchemy import Column, ForeignKey, Integer, DateTime, func
 from ..configs.db import Base
 from sqlalchemy.orm import relationship
-# from ..models.blog import Blog
-# from ..models.user import User
+from ..models.blog import Blog
+from ..models.user import User
 
 
 class ReadLater(Base):
