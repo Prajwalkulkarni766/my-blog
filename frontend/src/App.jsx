@@ -18,6 +18,7 @@ import Admin from "./pages/admin/Admin";
 import UserReport from "./pages/admin/UserReport";
 import BlogReport from "./pages/admin/BlogReport";
 import OtherReport from "./pages/admin/OtherReport";
+import PushNotification from "./pages/admin/PushNotification";
 
 const router = createBrowserRouter([
   {
@@ -91,6 +92,10 @@ const router = createBrowserRouter([
   {
     path: "admin/other-reports",
     element: <OtherReport />,
+  },
+  {
+    path: "admin/push-notification",
+    element: <PushNotification />,
   },
   {
     path: "*",

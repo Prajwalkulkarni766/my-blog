@@ -8,6 +8,7 @@ export default function UserReport() {
       <AdminNavbar />
       <div className="container my-container mt-5">
         <UserGrowthChart />
+        <div className="mt-5"></div>
         <ActiveUsersChart />
       </div>
     </>

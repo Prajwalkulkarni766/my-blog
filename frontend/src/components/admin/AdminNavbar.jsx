@@ -54,7 +54,7 @@ export default function AdminNavbar() {
               </ul>
             </li>
             <li className="nav-item">
-              <NavLink className="nav-link" href="#">
+              <NavLink className="nav-link" to={"/admin/push-notification"}>
                 Push notification
               </NavLink>
             </li>
