@@ -38,6 +38,7 @@ def send_notification(notification: NotificationSchema.NotificationCreate):
     NotificationController.create_notification(db=db, notification=notification)
 
 
+# send notification to particular user
 @notification_router.post("/trigger_notification")
 def trigger_notification(
   notification: NotificationSchema.NotificationCreate,

@@ -44,6 +44,10 @@ def get_users(db: Session, token: str):
   return db.query(models.User).filter(models.User.id == decoded_token["id"]).first()
 
 
+def get_all_users(db: Session):
+  return db.query(models.User).all()
+
+
 def login_user(db: Session, user: schemas.UserLogin):
   try:
     db_user = db.query(models.User).filter(models.User.email == user.email).first()

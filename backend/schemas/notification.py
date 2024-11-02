@@ -19,6 +19,11 @@ class NotificationCreate(NotificationBase):
   pass
 
 
+class NotificationCreateMultiple(BaseModel):
+  notification_title: str
+  notification_body: str
+
+
 class Notification(NotificationBase):
   id: int
 
