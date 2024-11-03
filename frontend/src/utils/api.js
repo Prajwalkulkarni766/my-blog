@@ -293,3 +293,16 @@ export const getTopBlogsReport = async (setData) => {
     }
   });
 };
+
+// get suggested blog
+export const getSuggestedBlog = async (query, setBlogs, setQuery) => {
+  await ApiCall(async () => {
+    const response = await axiosInstance.get(`/v1/blogs/suggest`, {
+      params: query,
+    });
+    if (response.data.length > 0) {
+      setBlogs((prevBlogs) => [...prevBlogs, ...response.data]);
+      setQuery((prevQuery) => ({ ...prevQuery, page: prevQuery.page + 1 }));
+    }
+  });
+};

@@ -74,14 +74,16 @@ export default function BlogPostCard({
               </div>
             </div>
             <div className="col-4">
-              {cardImage && (
-                <img
-                  src={`http://localhost:8000/${cardImage}`}
-                  className="img-fluid rounded"
-                  alt="Blog image"
-                  style={{ objectFit: "cover" }}
-                />
-              )}
+              <img
+                src={
+                  cardImage
+                    ? `http://localhost:8000/${cardImage}`
+                    : `https://placehold.co/600x350?text=Blog+Image&font=lora`
+                }
+                className="img-fluid rounded"
+                alt="Blog image"
+                style={{ objectFit: "cover" }}
+              />
             </div>
           </div>
         </NavLink>

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import user from "../../assets/user.webp";
 import Navbar from "../../components/user/Navbar.jsx";
-import BlogCard from "../../components/user/BlogCard.jsx";
 import ButtonGroup from "../../components/user/ButtonGroup.jsx";
 import like from "../../assets/like.svg";
 import comment from "../../assets/comment.svg";
@@ -18,14 +17,14 @@ import {
 import { getBlog } from "../../utils/api.js";
 import ShareModal from "../../components/user/ShareModal.jsx";
 import CommentModal from "../../components/user/CommentModal.jsx";
-import draftToHtml from "draftjs-to-html";
+import SuggestBlog from "../../components/user/SuggestBlog.jsx";
+import { useSearchParams } from "react-router-dom";
 
 export default function Blog() {
+  const [searchParams] = useSearchParams();
   const [isBlogListening, setIsBlogListening] = useState(false);
   const [shareModalVisiable, setShareModalVisible] = useState(false);
   const [commentModalVisible, setCommentModalVisible] = useState(false);
-  const [htmlContent, setHtmlContent] = useState(null);
-  // const  = draftToHtml(JSON.parse(rawContent));
 
   const [blog, setBlog] = useState({
     id: "",
@@ -41,6 +40,7 @@ export default function Blog() {
     user_about: "",
     user_follwer: 0,
     is_following: false,
+    tags: "",
   });
 
   function readBlog() {
@@ -65,10 +65,10 @@ export default function Blog() {
   }, []);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const blogId = params.get("id");
+    window.scrollTo(0, 0);
+    const blogId = searchParams.get("id");
     getBlog(blogId, setBlog);
-  }, []);
+  }, [searchParams]);
 
   const buttons = [
     {
@@ -216,41 +216,8 @@ export default function Blog() {
           </div>
         </div>
 
-        <hr />
-
-        <h2 className="mt-4 mb-4">Suggested</h2>
-
         {/* blogs that we are going to suggest */}
-        <div className="row row-cols-1 row-cols-md-2 g-4">
-          <div className="col">
-            <BlogCard
-              title={
-                "Covid 19 got mad in Japan and India Covid 19 got mad in Japan and India Covid 19 got mad in Japan and India"
-              }
-              subtitle={
-                "This is article about covid 19 of japan and india Lorem ipsum, dolor sit amet consectetur adipisicing elit. Sapiente necessitatibus architecto odit minus neque assumenda, cupiditate maxime illum debitis ullam facere reiciendis tenetur, praesentium provident fuga natus delectus maiores! Vitae quibusdam ab blanditiis nostrum necessitatibus. "
-              }
-              author={"Prajwal"}
-            />
-            <BlogCard
-              title={"Covid 19 got mad in Japan and India"}
-              subtitle={"This is article about covid 19 of japan and india"}
-              author={"Prajwal"}
-            />
-          </div>
-          <div className="col">
-            <BlogCard
-              title={"Covid 19 got mad in Japan and India"}
-              subtitle={"This is article about covid 19 of japan and india"}
-              author={"Prajwal"}
-            />
-            <BlogCard
-              title={"Covid 19 got mad in Japan and India"}
-              subtitle={"This is article about covid 19 of japan and india"}
-              author={"Prajwal"}
-            />
-          </div>
-        </div>
+        {blog.title !== "" && <SuggestBlog tags={blog.tags} />}
       </div>
 
       {shareModalVisiable && (

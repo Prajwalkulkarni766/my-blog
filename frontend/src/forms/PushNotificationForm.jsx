@@ -5,7 +5,6 @@ import axiosInstance from "../axios/axiosInstance";
 import React from "react";
 
 export default function PushNotificationForm() {
-
   const notificationSchema = Yup.object({
     notification_title: Yup.string().required(),
     notification_body: Yup.string().required(),
@@ -19,7 +18,10 @@ export default function PushNotificationForm() {
     validationSchema: notificationSchema,
     onSubmit: async (values) => {
       try {
-        const response = await axiosInstance.post("/v1/notifications/trigger_notification_for_all", values);
+        const response = await axiosInstance.post(
+          "/v1/reports/trigger_notification_for_all",
+          values,
+        );
 
         if (response.status === 200) {
           Toast.success("Notification pushed successfully");
@@ -31,7 +33,7 @@ export default function PushNotificationForm() {
           error.response?.data?.message || "An error occurred.";
         Toast.error(errorMessage);
       }
-    }
+    },
   });
 
   return (
@@ -52,8 +54,11 @@ export default function PushNotificationForm() {
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
             />
-            {formik.touched.notification_title && formik.errors.notification_title ? (
-              <div className="text-danger">{formik.errors.notification_title}</div>
+            {formik.touched.notification_title &&
+            formik.errors.notification_title ? (
+              <div className="text-danger">
+                {formik.errors.notification_title}
+              </div>
             ) : null}
           </div>
           <div className="mb-3">
@@ -69,8 +74,11 @@ export default function PushNotificationForm() {
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
             />
-            {formik.touched.notification_body && formik.errors.notification_body ? (
-              <div className="text-danger">{formik.errors.notification_body}</div>
+            {formik.touched.notification_body &&
+            formik.errors.notification_body ? (
+              <div className="text-danger">
+                {formik.errors.notification_body}
+              </div>
             ) : null}
           </div>
           <button type="submit" className="btn my-btn">
