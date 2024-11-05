@@ -17,7 +17,7 @@ Dependencies:
 """
 
 
-from fastapi import HTTPException, UploadFile
+from fastapi import HTTPException, UploadFile, BackgroundTasks
 from typing import Optional
 from sqlalchemy.orm import Session
 from ..utilities.token import get_current_user
@@ -38,8 +38,12 @@ from ..models.blog import Blog as BlogModel
 from ..models.history import History as HistoryModel
 
 
+from ..controllers.follower import get_follwers_list
+from ..routes.notification import send_notification
+from ..schemas import notification as NotificationSchema
+
 # Third-party imports
-# import numpy as np
+import numpy as np
 import pandas as pd
 import re
 # from fuzzywuzzy import process
@@ -56,9 +60,9 @@ from nltk.corpus import stopwords
 
 # sklearn imports
 # from sklearn.preprocessing import LabelEncoder
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-
 
 
 stop_words = set(stopwords.words("english"))
@@ -127,6 +131,7 @@ def get_blog(db: Session, blog_id: int, token: str):
     "user_about": user.about,
     "user_follower": 0,
     "is_following": following_status,
+    "tags": blog.tags
   }
 
 
@@ -134,8 +139,23 @@ def get_blogs(db: Session):
   return db.query(BlogModel).all()
 
 
-def recommend_blog(db: Session, page: int, limit: int, tags="programming"):
-  # todo: remove tags from parameter and retrive tags based on user history
+def recommend_blog(db: Session, page: int, limit: int, tags: str):
+  if not tags:
+        # If no tags, return newest blogs
+    blogs = get_blogs(db=db)
+    return [
+        {
+            "id": blog.id,
+            "title": blog.title,
+            "sub_title": blog.sub_title,
+            "image": blog.image,
+            "clap_count": blog.clap_count,
+            "comment_count": blog.comment_count,
+            "created_at": blog.created_at,
+        }
+        for blog in blogs[((page-1)*limit):((page-1)*limit + limit)]
+    ]
+  
   blogs = get_blogs(db=db)
   blog_df = pd.DataFrame(
     [
@@ -144,7 +164,7 @@ def recommend_blog(db: Session, page: int, limit: int, tags="programming"):
         "title": blog.title,
         "sub_title": blog.sub_title,
         "image": blog.image,
-        "tags": blog.tags,
+        "tags": blog.tags if blog.tags else "",
         "clap_count": blog.clap_count,
         "comment_count": blog.comment_count,
         "created_at": blog.created_at,
@@ -153,39 +173,50 @@ def recommend_blog(db: Session, page: int, limit: int, tags="programming"):
     ]
   )
 
-  # Check if there are any blogs with the specified tags
-  matching_blogs = blog_df[blog_df["tags"] == tags]
-
-  if matching_blogs.empty:
-    return []  # Return an empty list if no matching blogs are found
-
-  vectors = cv.fit_transform(blog_df["tags"]).toarray()
-  similarity = cosine_similarity(vectors)
-
-  blog_index = matching_blogs.index[0]
-  distances = similarity[blog_index]
-  blog_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])
-
+  # Initialize TF-IDF vectorizer
+  tfidf = TfidfVectorizer(stop_words='english')
+    
+  # Create tag matrix
+  tag_matrix = tfidf.fit_transform(blog_df['tags'].fillna(''))
+  
+  # Transform user tags
+  user_tags_vector = tfidf.transform([tags])
+  
+  # Calculate similarity
+  similarities = cosine_similarity(user_tags_vector, tag_matrix)[0]
+  
+  # Get indices of blogs sorted by similarity
+  similar_indices = np.argsort(similarities)[::-1]
+  
+  # Calculate pagination
   start_idx = (page - 1) * limit
   end_idx = start_idx + limit
-
+  
+  # Get recommended blogs
   recommended_blogs = []
-
-  for i in blog_list[start_idx:end_idx]:
-    blog_idx = i[0]
-    recommended_blogs.append(
-      {
-        "id": blog_df.iloc[blog_idx].id,
-        "title": blog_df.iloc[blog_idx].title,
-        "sub_title": blog_df.iloc[blog_idx].sub_title,
-        "image": blog_df.iloc[blog_idx].image,
-        "clap_count": blog_df.iloc[blog_idx].clap_count,
-        "comment_count": blog_df.iloc[blog_idx].comment_count,
-        "created_at": blog_df.iloc[blog_idx].created_at,
-      }
-    )
-
+  for idx in similar_indices[start_idx:end_idx]:
+      if similarities[idx] > 0:
+          recommended_blogs.append({
+              "id": blog_df.iloc[idx].id,
+              "title": blog_df.iloc[idx].title,
+              "sub_title": blog_df.iloc[idx].sub_title,
+              "image": blog_df.iloc[idx].image,
+              "clap_count": blog_df.iloc[idx].clap_count,
+              "comment_count": blog_df.iloc[idx].comment_count,
+              "created_at": blog_df.iloc[idx].created_at,
+          })
+  
   return recommended_blogs
+
+
+def suggest_blog(db: Session, tags: str, page: int, limit: int):
+  tag_list = [tag.strip() for tag in tags.split() if tag.strip()]
+  if not tag_list:
+    return db.query(BlogModel).offset((page - 1) * limit).limit(limit)
+
+  offset = (page - 1) * limit
+  filters = [BlogModel.tags.like(f"%{tag}%") for tag in tag_list]
+  return db.query(BlogModel).filter(or_(*filters)).offset(offset).limit(limit)
 
 
 def follwing_blog(db: Session, token: str, page: int, limit: int):
@@ -253,10 +284,31 @@ def search_blogs(db: Session, query_string: str, page: int, limit: int):
   return query.all()
 
 
+def notify_followers(
+    db: Session,
+    writer_id: int,
+    blog_title: str,
+):
+    followers = get_follwers_list(db=db, user_id=writer_id)
+    
+    for follower in followers:
+        notification_data = NotificationSchema.NotificationCreate(
+            notification_title=f"New Blog Post",
+            notification_body=f"New blog '{blog_title}' has been published",
+            user_id=follower.follower_id,
+        )
+        send_notification(notification=notification_data)
+
+
 def create_blog(
-  db: Session, blog: BlogSchema.BlogBase, token: str, image: Optional[UploadFile]
+  db: Session, 
+  blog: BlogSchema.BlogBase, 
+  token: str, 
+  image: Optional[UploadFile],
+  background_tasks: BackgroundTasks
 ):
   decoded_token = get_current_user(token)
+  writer_id=decoded_token["id"]
   # cleaning the data and creating tags
   cleaned_blog_title = clean_text(blog.title)
   cleaned_blog_sub_title = clean_text(blog.sub_title)
@@ -284,6 +336,13 @@ def create_blog(
   db.add(db_blog)
   db.commit()
   db.refresh(db_blog)
+
+  background_tasks.add_task(
+    notify_followers(writer_id=writer_id, db=db, blog_title=blog.title),
+    db=db,
+    blog_title=blog.title,
+  )
+  
   return blog
 
 

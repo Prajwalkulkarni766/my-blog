@@ -23,6 +23,34 @@ from fastapi import HTTPException, status
 from ..utilities.token import get_current_user
 
 
+def get_history_tags(db: Session, token: str) -> str:
+  decoded_token = get_current_user(token)
+  histories = (
+        db.query(models.History)
+        .join(models.Blog)
+        .filter(models.History.user_id == decoded_token["id"])
+        .with_entities(models.Blog.tags)
+        .all()
+    )
+    
+    # Filter out None values and split tags into lists
+  all_tags = []
+  for history in histories:
+      if history.tags:
+          all_tags.extend(history.tags.split())
+          
+  # Count frequency of each tag
+  tag_counts = {}
+  for tag in all_tags:
+      tag_counts[tag] = tag_counts.get(tag, 0) + 1
+      
+  # Get most frequent tags (top 5)
+  sorted_tags = sorted(tag_counts.items(), key=lambda x: x[1], reverse=True)
+  top_tags = ' '.join([tag for tag, count in sorted_tags[:5]])
+  
+  return top_tags
+
+
 def get_history_from_db(db: Session, token: str, page: int, limit: int):
   decoded_token = get_current_user(token)
   offset = (page - 1) * limit

@@ -37,6 +37,7 @@ class BlogGet(BlogBase):
   user_about: str
   user_follower: int
   is_following: bool
+  tags: str
 
 
 class BlogStr(BaseModel):

@@ -7,7 +7,7 @@ creating, updating, and deleting blog posts.
 """
 
 
-from fastapi import APIRouter, Depends, File, UploadFile, Form
+from fastapi import APIRouter, Depends, File, UploadFile, Form, BackgroundTasks, Query
 from typing import Optional
 from sqlalchemy.orm import Session
 from typing import List
@@ -21,6 +21,7 @@ from ..schemas import blog as schemas
 
 # importing controller
 from ..controllers import blog as BlogController
+from ..controllers import history as HistoryController
 
 
 # setting up route
@@ -30,9 +31,25 @@ blog_router = APIRouter(prefix="/blogs", tags=["Blog"])
 # recommend blog
 @blog_router.get("/recommend", response_model=List[schemas.BlogStr])
 def get_recommended_blogs(
-  page: int = 1, limit: int = 10, db: Session = Depends(get_db)
+  page: int = 1, 
+  limit: int = 10, 
+  token: str = Depends(oauth2_scheme),
+  db: Session = Depends(get_db)
 ):
-  return BlogController.recommend_blog(db=db, page=page, limit=limit)
+  tags = HistoryController.get_history_tags(db=db, token=token)
+  print(tags)
+  return BlogController.recommend_blog(db=db, page=page, limit=limit, tags=tags)
+
+
+# suggest blog
+@blog_router.get("/suggest", response_model=List[schemas.BlogStr])
+def get_recommended_blogs(
+  page: int = 1, 
+  limit: int = 4, 
+  tags: str = Query(...), 
+  db: Session = Depends(get_db)
+):
+  return BlogController.suggest_blog(db=db, tags=tags, page=page, limit=limit)
 
 
 # follwing blog
@@ -80,6 +97,7 @@ def get_requested_blog(
 # create blog
 @blog_router.post("", response_model=schemas.BlogCreate)
 def post_blog(
+  background_tasks: BackgroundTasks,
   title: str = Form(...),
   sub_title: str = Form(...),
   content: str = Form(...),
@@ -91,7 +109,13 @@ def post_blog(
   blog_data = schemas.BlogCreate(
     title=title, sub_title=sub_title, content=content, tags=tags
   )
-  return BlogController.create_blog(db=db, blog=blog_data, token=token, image=image)
+  return BlogController.create_blog(
+    db=db, 
+    blog=blog_data, 
+    token=token, 
+    image=image, 
+    background_tasks=background_tasks
+  )
 
 
 # update blog

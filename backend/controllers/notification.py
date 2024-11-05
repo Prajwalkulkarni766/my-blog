@@ -16,7 +16,7 @@ Dependencies:
 """
 
 
-from ..schemas import notification as schemas
+from ..schemas import notification as NotificationSchema
 from ..models import notification as models
 from sqlalchemy.orm import Session
 from ..utilities.token import get_current_user
@@ -31,7 +31,7 @@ def get_notifications(db: Session, token: str):
   )
 
 
-def create_notification(db: Session, notification: schemas.NotificationCreate):
+def create_notification(db: Session, notification: NotificationSchema.NotificationCreate):
   db_notification = models.Notification(
     user_id=notification.user_id,
     notification_title=notification.notification_title,
